@@ -3,7 +3,7 @@
 
   const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   const isIG = location.hostname.endsWith('instagram.com');
-  const settings = { speed: 1, autoPip: true };
+  const settings = { speed: 1, autoPip: true, shortcuts: speediaDefaultShortcuts() };
   // O Firefox não expõe a API de Picture-in-Picture para páginas nem extensões.
   const canPip = 'requestPictureInPicture' in HTMLVideoElement.prototype;
 
@@ -165,7 +165,7 @@
   const soundIcon = icon(ICON_SOUND);
   const mutedIcon = icon(ICON_MUTED);
   const muteLabel = h('span');
-  const muteBtn = h('button', { title: 'Ativar/desativar o som' }, soundIcon, mutedIcon, muteLabel);
+  const muteBtn = h('button', {}, soundIcon, mutedIcon, muteLabel);
   const autoBtn = h('button', {
     textContent: 'Auto PiP',
     title: 'Mini player automático ao rolar a página com o vídeo com som',
@@ -251,6 +251,8 @@
     curLabel.textContent = settings.speed + '×';
     speedBtns.forEach((b, i) => b.classList.toggle('on', SPEEDS[i] === settings.speed));
     autoBtn.classList.toggle('on', settings.autoPip);
+    const muteKey = speediaPretty(settings.shortcuts.mute);
+    muteBtn.title = 'Ativar/desativar o som' + (muteKey ? ` (${muteKey})` : '');
   }
 
   // ---------------------------------------------------------------- velocidade
@@ -266,6 +268,14 @@
     settings.speed = s;
     renderSettings();
     document.querySelectorAll('video').forEach(applySpeed);
+  }
+
+  // Sobe ou desce uma fase na lista de velocidades, parando nas pontas.
+  function stepSpeed(dir) {
+    const i = SPEEDS.indexOf(settings.speed);
+    const next = SPEEDS[Math.min(SPEEDS.length - 1, Math.max(0, i + dir))];
+    if (next !== settings.speed) setSpeed(next);
+    toast('Velocidade: ' + next + '×');
   }
 
   // ---------------------------------------------------------------- mini player / PiP
@@ -292,6 +302,14 @@
     const area = Math.max(0, w) * Math.max(0, hgt);
     const full = Math.min(r.width * r.height, innerWidth * innerHeight);
     return { r, area, ratio: full ? area / full : 0 };
+  }
+
+  // Vídeo encoberto por outro: o Instagram mantém o feed montado atrás do visualizador de Reels.
+  function covered(v, r) {
+    const x = (Math.max(r.left, 0) + Math.min(r.right, innerWidth)) / 2;
+    const y = (Math.max(r.top, 0) + Math.min(r.bottom, innerHeight)) / 2;
+    const top = document.elementsFromPoint(x, y).find((el) => el instanceof HTMLVideoElement);
+    return !!top && top !== v;
   }
 
   function sizeMini(v) {
@@ -382,12 +400,13 @@
   }
 
   pipBtn.onclick = () => active && togglePip(active);
-  muteBtn.onclick = () => {
-    if (!active) return;
-    const unmute = !audible(active);
-    active.muted = !unmute;
-    if (unmute && active.volume === 0) active.volume = 1;
-  };
+  function toggleMute(v) {
+    const unmute = !audible(v);
+    v.muted = !unmute;
+    if (unmute && v.volume === 0) v.volume = 1;
+  }
+
+  muteBtn.onclick = () => active && toggleMute(active);
   dlBtn.onclick = () => active && download(active);
   autoBtn.onclick = () => {
     settings.autoPip = !settings.autoPip;
@@ -422,6 +441,7 @@
     for (const v of document.querySelectorAll('video')) {
       const { r, area, ratio } = vis(v);
       if (r.width < 120 || r.height < 80) continue;
+      if (area && covered(v, r)) continue;
       if (ratio >= 0.6) {
         suppressed.delete(v);
         if (!v.paused && audible(v)) armed.add(v);
@@ -578,17 +598,103 @@
     schedule();
   });
 
+  // Atalhos de teclado (editáveis no popup). Tela cheia: vídeo com som (o preso, senão o da barra, senão o mais visível).
+  function fullscreenTarget() {
+    const ok = (v) => v && v.isConnected && audible(v);
+    if (ok(pinned)) return pinned;
+    if (ok(active)) return active;
+    let best = null;
+    let bestArea = 0;
+    for (const v of document.querySelectorAll('video')) {
+      if (v.paused || !audible(v)) continue;
+      const { r, area } = vis(v);
+      if (area > bestArea && !covered(v, r)) {
+        bestArea = area;
+        best = v;
+      }
+    }
+    return best;
+  }
+
+  let addedControls = null; // vídeo que ganhou controles nativos só durante a tela cheia
+  document.addEventListener('fullscreenchange', () => {
+    if (addedControls && document.fullscreenElement !== addedControls) {
+      addedControls.controls = false;
+      addedControls = null;
+    }
+    schedule();
+  });
+
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      if (!e.isTrusted || e.repeat) return;
+      const combo = speediaCombo(e);
+      const action = combo && Object.keys(settings.shortcuts).find((id) => settings.shortcuts[id] === combo);
+      if (!action) return;
+      const t = e.composedPath()[0];
+      if (t instanceof Element && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      if (action === 'speedUp' || action === 'speedDown' || action === 'speedReset') {
+        if (!active && !pinned) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (action === 'speedReset') {
+          setSpeed(1);
+          toast('Velocidade: 1×');
+        } else {
+          stepSpeed(action === 'speedUp' ? 1 : -1);
+        }
+        return;
+      }
+      if (action === 'mute') {
+        const target = document.fullscreenElement instanceof HTMLVideoElement ? document.fullscreenElement : active || pinned;
+        if (!target) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        lastInput = performance.now();
+        toggleMute(target);
+        return;
+      }
+      const fs = document.fullscreenElement;
+      // Tela cheia do próprio site: não interfere.
+      if (fs && !(fs instanceof HTMLVideoElement)) return;
+      const v = fs || fullscreenTarget();
+      if (!v) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (fs) {
+        document.exitFullscreen().catch(() => {});
+        return;
+      }
+      const hadControls = v.controls;
+      v.requestFullscreen().then(
+        () => {
+          if (!hadControls) {
+            v.controls = true;
+            addedControls = v;
+          }
+        },
+        (err) => toast('Não foi possível abrir a tela cheia: ' + err.message)
+      );
+    },
+    true
+  );
+
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
 
-  chrome.storage.sync.get({ autoPip: true }).then((s) => {
+  const withDefaults = (saved) => ({ ...speediaDefaultShortcuts(), ...saved });
+  chrome.storage.sync.get({ autoPip: true, shortcuts: {} }).then((s) => {
     settings.autoPip = s.autoPip;
+    settings.shortcuts = withDefaults(s.shortcuts);
     renderSettings();
   });
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.autoPip) {
       settings.autoPip = changes.autoPip.newValue;
-      renderSettings();
+      if (!settings.autoPip && mode === 'mini') unpin();
     }
+    if (changes.shortcuts) settings.shortcuts = withDefaults(changes.shortcuts.newValue);
+    renderSettings();
   });
 
   renderSettings();

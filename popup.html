@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Speedia</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; width: 320px; padding: 14px; background: #161616; color: #fff;
+        font: 500 13px/1.4 system-ui, sans-serif; }
+      h1 { margin: 0 0 12px; font-size: 15px; }
+      h2 { margin: 16px 0 6px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+        color: rgba(255,255,255,.55); }
+      .item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.1); }
+      .text { flex: 1; min-width: 0; }
+      .hint { font-size: 12px; font-weight: 400; color: rgba(255,255,255,.55); }
+      button { font: inherit; color: inherit; cursor: pointer; border: 0; border-radius: 8px;
+        background: rgba(255,255,255,.12); padding: 7px 10px; }
+      button:hover { background: rgba(255,255,255,.22); }
+      button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .key { min-width: 84px; font-weight: 600; text-align: center; }
+      .key.empty { font-weight: 400; color: rgba(255,255,255,.55); }
+      .key.rec { background: #fff; color: #111; }
+      .clear { padding: 7px 9px; }
+      input[type='checkbox'] { width: 18px; height: 18px; margin: 0; accent-color: #fff; cursor: pointer; }
+      label.item { cursor: pointer; }
+      .foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Speedia</h1>
+
+    <h2>Atalhos de teclado</h2>
+    <div id="shortcuts"></div>
+
+    <h2>Mini player</h2>
+    <label class="item">
+      <span class="text">
+        Auto PiP
+        <div class="hint">Mini player automático ao rolar a página com o vídeo com som</div>
+      </span>
+      <input type="checkbox" id="autoPip" />
+    </label>
+
+    <div class="foot"><button id="reset">Restaurar atalhos padrão</button></div>
+
+    <script src="shortcuts.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
