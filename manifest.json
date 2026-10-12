@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Speedia",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Controle de velocidade, mini player/PiP ao rolar e download de vídeos no Instagram e no X/Twitter.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
+    "96": "icons/icon96.png",
     "128": "icons/icon128.png"
   },
   "action": {
@@ -14,6 +15,7 @@
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
+      "96": "icons/icon96.png",
       "128": "icons/icon128.png"
     },
     "default_title": "Speedia"
