@@ -1,6 +1,7 @@
 name: Release
 
-# Enviar uma tag de versão (ex.: v1.0.0) cria uma release com o zip da extensão.
+# Enviar uma tag de versão (ex.: v1.0.0) cria uma release com o zip da extensão,
+# as novidades do CHANGELOG.md e o updates.json do Firefox.
 on:
   push:
     tags: ['v*']
@@ -25,6 +26,17 @@ jobs:
             exit 1
           fi
 
+      # As novidades da versão saem do CHANGELOG.md; sem a seção, a release não é publicada.
+      - name: Extrair as novidades do changelog
+        run: |
+          version=$(jq -r .version manifest.json)
+          awk -v v="$version" '$1 == "##" && $2 == v { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md > changes.md
+          if ! grep -q '[^[:space:]]' changes.md; then
+            echo "::error::Falta a seção '## $version' no CHANGELOG.md"
+            exit 1
+          fi
+          cat changes.md
+
       - name: Montar o zip
         run: |
           mkdir -p dist/speedia
@@ -47,10 +59,28 @@ jobs:
             --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
           mv dist/signed/*.xpi "dist/speedia-firefox-$TAG.xpi"
 
+      # O Firefox consulta este arquivo (update_url do manifest) para atualizar o .xpi instalado.
+      - name: Gerar o arquivo de atualização do Firefox
+        run: |
+          xpi="dist/speedia-firefox-$TAG.xpi"
+          if [ ! -f "$xpi" ]; then
+            echo "::notice::Sem .xpi assinado; release sem updates.json"
+            exit 0
+          fi
+          jq -n \
+            --arg id "$(jq -r .browser_specific_settings.gecko.id manifest.json)" \
+            --arg version "$(jq -r .version manifest.json)" \
+            --arg link "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/speedia-firefox-$TAG.xpi" \
+            --arg hash "sha256:$(sha256sum "$xpi" | cut -d' ' -f1)" \
+            '{addons: {($id): {updates: [{version: $version, update_link: $link, update_hash: $hash}]}}}' \
+            > dist/updates.json
+          cat dist/updates.json
+
       - name: Criar a release
         run: |
           shopt -s nullglob
-          cat > notes.md <<'EOF'
+          { echo "## Novidades"; cat changes.md; echo; } > notes.md
+          cat >> notes.md <<'EOF'
           ## Como instalar no Chrome
 
           1. Baixe `speedia-$TAG.zip` abaixo e descompacte.
@@ -61,6 +91,7 @@ jobs:
           ## Como instalar no Firefox
 
           Se houver um `speedia-firefox-$TAG.xpi` abaixo, abra-o no Firefox e confirme a instalação.
+          Instalado assim, o Firefox passa a atualizar a extensão sozinho a cada nova release.
 
           Sem o `.xpi`, a instalação é temporária (some ao fechar o Firefox):
 
@@ -69,4 +100,4 @@ jobs:
           3. Clique em **Carregar extensão temporária** e escolha o zip.
           EOF
           sed -i "s/\$TAG/$TAG/g" notes.md
-          gh release create "$TAG" dist/speedia-*.zip dist/speedia-*.xpi --title "Speedia $TAG" --notes-file notes.md --generate-notes
+          gh release create "$TAG" dist/speedia-*.zip dist/speedia-*.xpi dist/updates.json --title "Speedia $TAG" --notes-file notes.md --generate-notes
