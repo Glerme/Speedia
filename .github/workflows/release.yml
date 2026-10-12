@@ -1,0 +1,44 @@
+name: Release
+
+# Enviar uma tag de versão (ex.: v1.0.0) cria uma release com o zip da extensão.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir versão do manifest
+        run: |
+          version=$(jq -r .version manifest.json)
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::A tag $TAG não bate com a versão $version do manifest.json"
+            exit 1
+          fi
+
+      - name: Montar o zip
+        run: |
+          mkdir -p dist/speedia
+          cp -r manifest.json background.js content.js inject.js icons dist/speedia/
+          cd dist && zip -r "speedia-$TAG.zip" speedia
+
+      - name: Criar a release
+        run: |
+          cat > notes.md <<'EOF'
+          ## Como instalar
+
+          1. Baixe o arquivo `.zip` abaixo e descompacte.
+          2. Abra `chrome://extensions` e ative o **Modo do desenvolvedor**.
+          3. Clique em **Carregar sem compactação** e escolha a pasta `speedia`.
+          4. Recarregue as abas do Instagram e do X que já estiverem abertas.
+          EOF
+          gh release create "$TAG" "dist/speedia-$TAG.zip" --title "Speedia $TAG" --notes-file notes.md --generate-notes
