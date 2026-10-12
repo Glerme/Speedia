@@ -30,15 +30,43 @@ jobs:
           mkdir -p dist/speedia
           cp -r manifest.json background.js content.js inject.js icons dist/speedia/
           cd dist && zip -r "speedia-$TAG.zip" speedia
+          # O Firefox espera o manifest na raiz do arquivo.
+          cd speedia && zip -r "../speedia-firefox-$TAG.zip" .
+
+      # Só roda se os secrets da Mozilla existirem; gera um .xpi de instalação permanente.
+      - name: Assinar para o Firefox
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          if [ -z "$AMO_JWT_ISSUER" ] || [ -z "$AMO_JWT_SECRET" ]; then
+            echo "::notice::Secrets AMO_JWT_ISSUER/AMO_JWT_SECRET ausentes; release sem .xpi assinado"
+            exit 0
+          fi
+          npx --yes web-ext sign --channel=unlisted --source-dir dist/speedia --artifacts-dir dist/signed \
+            --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
+          mv dist/signed/*.xpi "dist/speedia-firefox-$TAG.xpi"
 
       - name: Criar a release
         run: |
+          shopt -s nullglob
           cat > notes.md <<'EOF'
-          ## Como instalar
+          ## Como instalar no Chrome
 
-          1. Baixe o arquivo `.zip` abaixo e descompacte.
+          1. Baixe `speedia-$TAG.zip` abaixo e descompacte.
           2. Abra `chrome://extensions` e ative o **Modo do desenvolvedor**.
           3. Clique em **Carregar sem compactação** e escolha a pasta `speedia`.
           4. Recarregue as abas do Instagram e do X que já estiverem abertas.
+
+          ## Como instalar no Firefox
+
+          Se houver um `speedia-firefox-$TAG.xpi` abaixo, abra-o no Firefox e confirme a instalação.
+
+          Sem o `.xpi`, a instalação é temporária (some ao fechar o Firefox):
+
+          1. Baixe `speedia-firefox-$TAG.zip` abaixo (não precisa descompactar).
+          2. Abra `about:debugging#/runtime/this-firefox`.
+          3. Clique em **Carregar extensão temporária** e escolha o zip.
           EOF
-          gh release create "$TAG" "dist/speedia-$TAG.zip" --title "Speedia $TAG" --notes-file notes.md --generate-notes
+          sed -i "s/\$TAG/$TAG/g" notes.md
+          gh release create "$TAG" dist/speedia-*.zip dist/speedia-*.xpi --title "Speedia $TAG" --notes-file notes.md --generate-notes

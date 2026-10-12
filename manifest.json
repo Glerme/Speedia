@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Speedia",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Controle de velocidade, mini player/PiP ao rolar e download de vídeos no Instagram e no X/Twitter.",
   "icons": {
     "16": "icons/icon16.png",
@@ -18,13 +18,16 @@
     },
     "default_title": "Speedia"
   },
-  "minimum_chrome_version": "111",
+  "minimum_chrome_version": "121",
   "permissions": [
     "downloads",
     "storage"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
@@ -50,5 +53,16 @@
       ],
       "run_at": "document_start"
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "speedia@glerme",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  }
 }

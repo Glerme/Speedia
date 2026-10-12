@@ -4,6 +4,8 @@
   const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   const isIG = location.hostname.endsWith('instagram.com');
   const settings = { speed: 1, autoPip: true };
+  // O Firefox não expõe a API de Picture-in-Picture para páginas nem extensões.
+  const canPip = 'requestPictureInPicture' in HTMLVideoElement.prototype;
 
   // ---------------------------------------------------------------- mídia capturada (inject.js)
 
@@ -195,6 +197,8 @@
   const fill = h('div', { className: 'fill' });
   const timeEl = h('div', { className: 'time' });
   const seek = h('div', { className: 'seek', hidden: true }, h('div', { className: 'track' }, fill), timeEl);
+
+  pipBtn.hidden = miniPip.hidden = !canPip;
 
   const toastEl = h('div', { className: 'toast', hidden: true });
   root.append(h('style', { textContent: CSS }), bar, seek, mini, toastEl);
