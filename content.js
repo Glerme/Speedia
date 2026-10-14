@@ -304,7 +304,8 @@
     const muteKey = speediaPretty(settings.shortcuts.mute);
     muteKeyText = muteKey ? ` (${muteKey})` : '';
     muteBtn.title = t('ovMuteTitle') + muteKeyText;
-    muteBtn.setAttribute('aria-label', muteText() + (muteLabel.textContent ? ': ' + muteLabel.textContent.toLowerCase() : ''));
+    if (muteLabel.textContent) muteBtn.setAttribute('aria-label', muteText() + ': ' + t(muteLabel.textContent === t('ovSoundLabel') ? 'ovMuteStateOn' : 'ovMuteStateOff'));
+    else muteBtn.setAttribute('aria-label', muteText());
   }
 
   // ---------------------------------------------------------------- velocidade
