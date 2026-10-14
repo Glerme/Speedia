@@ -108,7 +108,7 @@
     button:active { background: var(--press); transform: scale(.96); }
     button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
     /* Legibilidade local: véu escuro leve só atrás do conteúdo (botões e .cur); o vidro em volta continua claro. */
-    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.48), rgba(0,0,0,.42)); --chip-cur: rgba(0,0,0,.5); }
+    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.48), rgba(0,0,0,.42)); --chip-cur: rgba(0,0,0,.52); }
     .cur { border-radius: 999px; }
     :host .toast { background: var(--chip), var(--sheen), var(--bg-strong); }
     button:not(.on) { background: var(--chip); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
@@ -116,7 +116,7 @@
     button:not(.on):hover { background: linear-gradient(var(--hover), var(--hover)), var(--chip); }
     button:not(.on):active { background: linear-gradient(var(--press), var(--press)), var(--chip); }
     /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
-    button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), color-mix(in srgb, var(--accent) 62%, transparent);
+    button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), linear-gradient(color-mix(in srgb, var(--accent) 62%, transparent), color-mix(in srgb, var(--accent) 62%, transparent)), var(--chip);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 6px -2px rgba(255,255,255,.25), 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
     button.on:hover { filter: brightness(1.12); }
     /* Depois das regras de box-shadow acima: o halo de foco precisa vencer. */
@@ -177,7 +177,7 @@
     /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
        Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
     :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.95); }
-    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o contraste vem do véu local (--chip-cur no .cur, ~5:1 sobre branco; --chip nos botões, ~3:1). */
+    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o contraste vem do véu local (--chip-cur no .cur, ~4.8:1 sobre branco; --chip nos botões, ~3:1; a gota roxa leva o --chip por baixo). */
     :host { --glass-open: blur(20px) saturate(1.8) brightness(1); }
     :host(.distort) { --glass-open: url(#speedia-glass) blur(20px) saturate(1.8) brightness(1); }
     .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.06); --sheen: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%); }
@@ -188,6 +188,7 @@
       :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.95); --glass-open: blur(20px) saturate(1.8) brightness(1); }
     }
     @media (prefers-reduced-transparency: reduce) {
+      .bar:hover, .bar:focus-within, .bar.side { --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
       :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
       .bar, .toast, .ctl { -webkit-backdrop-filter: none; backdrop-filter: none; }
       .bar::before, .ctl::before, .toast::before { display: none; }
