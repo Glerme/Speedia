@@ -1,13 +1,32 @@
-// Compartilhado entre o content script e o popup de configurações.
+// Compartilhado entre o content script, o popup e a página de boas-vindas.
+
+// Texto localizado (_locales). Se a API falhar (ex.: extensão recarregada), devolve a própria chave.
+function speediaMsg(key, ...subs) {
+  try {
+    return chrome.i18n.getMessage(key, subs) || key;
+  } catch {
+    return key;
+  }
+}
+
+// Preenche os elementos marcados com data-i18n (texto), data-i18n-title e data-i18n-aria-label e define <html lang>.
+function speediaApplyI18n() {
+  document.documentElement.lang = chrome.i18n.getUILanguage();
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = speediaMsg(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = speediaMsg(el.dataset.i18nTitle);
+  for (const el of document.querySelectorAll('[data-i18n-aria-label]')) {
+    el.setAttribute('aria-label', speediaMsg(el.dataset.i18nAriaLabel));
+  }
+}
 
 // Um atalho é guardado como texto: modificadores + código físico da tecla, ex.: "Ctrl+Shift+KeyF".
 // Texto vazio significa atalho desativado.
 var SPEEDIA_ACTIONS = [
-  { id: 'fullscreen', label: 'Tela cheia', hint: 'No vídeo que está com som', def: 'KeyF' },
-  { id: 'mute', label: 'Ligar/desligar o som', hint: 'No vídeo que está na tela', def: 'KeyM' },
-  { id: 'speedUp', label: 'Aumentar a velocidade', hint: 'Sobe uma fase, ex.: 1× → 1.25×', def: 'Shift+Period' },
-  { id: 'speedDown', label: 'Diminuir a velocidade', hint: 'Desce uma fase, ex.: 1.25× → 1×', def: 'Shift+Comma' },
-  { id: 'speedReset', label: 'Resetar a velocidade', hint: 'Volta para 1×', def: 'Shift+Digit1' },
+  { id: 'fullscreen', label: speediaMsg('actFullscreenLabel'), hint: speediaMsg('actFullscreenHint'), def: 'KeyF' },
+  { id: 'mute', label: speediaMsg('actMuteLabel'), hint: speediaMsg('actMuteHint'), def: 'KeyM' },
+  { id: 'speedUp', label: speediaMsg('actSpeedUpLabel'), hint: speediaMsg('actSpeedUpHint'), def: 'Shift+Period' },
+  { id: 'speedDown', label: speediaMsg('actSpeedDownLabel'), hint: speediaMsg('actSpeedDownHint'), def: 'Shift+Comma' },
+  { id: 'speedReset', label: speediaMsg('actSpeedResetLabel'), hint: speediaMsg('actSpeedResetHint'), def: 'Shift+Digit1' },
 ];
 
 function speediaDefaultShortcuts() {
@@ -30,7 +49,7 @@ function speediaPretty(combo) {
   if (!combo) return '';
   const parts = combo.split('+');
   const code = parts.pop();
-  const names = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: 'Espaço', Period: '.', Comma: ',' };
+  const names = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: speediaMsg('keySpace'), Period: '.', Comma: ',' };
   const key = names[code] || code.replace(/^(Key|Digit)/, '').replace(/^Numpad/, 'Num ');
   return [...parts, key].join(' + ');
 }

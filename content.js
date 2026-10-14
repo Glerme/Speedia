@@ -1,6 +1,7 @@
 (() => {
   'use strict';
 
+  const t = speediaMsg;
   const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   const isIG = location.hostname.endsWith('instagram.com');
   const settings = { speed: 1, autoPip: true, shortcuts: speediaDefaultShortcuts() };
@@ -73,15 +74,15 @@
   async function download(v) {
     const hit = findMedia(v);
     if (!hit) {
-      toast('Não achei o arquivo deste vídeo. Recarregue a página e dê play nele antes de baixar.');
+      toast(t('toastNoMedia'));
       return;
     }
     const name = isIG ? `instagram_${igCode(v) || Date.now()}` : `x_${tweetId(v) || Date.now()}`;
     try {
       const res = await chrome.runtime.sendMessage({ type: 'download', url: hit.url, filename: name + '.mp4' });
-      toast(res?.ok ? 'Download iniciado' : 'Falha no download: ' + (res?.error || 'erro desconhecido'));
+      toast(res?.ok ? t('toastDownloadStarted') : t('toastDownloadFailed', res?.error || t('toastUnknownError')));
     } catch {
-      toast('A extensão foi recarregada. Atualize a página.');
+      toast(t('toastReloaded'));
     }
   }
 
@@ -199,18 +200,18 @@
   const ICON_MUTED = 'M4 9v6h4l5 4V5L8 9H4zM16 9.5l5 5m0-5l-5 5';
 
   const curLabel = h('div', { className: 'cur' });
-  const speedBtns = SPEEDS.map((s) => h('button', { textContent: s + '×', title: `Velocidade ${s}×`, ariaLabel: `Velocidade ${s}×`, onclick: () => setSpeed(s) }));
-  const pipBtn = h('button', { title: 'Picture-in-Picture (janela flutuante)', ariaLabel: 'Picture-in-Picture' }, icon(ICON_PIP), 'PiP');
+  const speedBtns = SPEEDS.map((s) => h('button', { textContent: s + '×', title: t('ovSpeedTitle', s), ariaLabel: t('ovSpeedTitle', s), onclick: () => setSpeed(s) }));
+  const pipBtn = h('button', { title: t('ovPipTitle'), ariaLabel: t('ovPipAria') }, icon(ICON_PIP), t('ovPipLabel'));
   const soundIcon = icon(ICON_SOUND);
   const mutedIcon = icon(ICON_MUTED);
   const muteLabel = h('span');
-  const muteBtn = h('button', { title: 'Ativar/desativar o som', ariaLabel: 'Ativar/desativar o som' }, soundIcon, mutedIcon, muteLabel);
+  const muteBtn = h('button', { title: t('ovMuteTitle'), ariaLabel: t('ovMuteTitle') }, soundIcon, mutedIcon, muteLabel);
   const autoBtn = h('button', {
-    textContent: 'Auto PiP',
-    title: 'Mini player automático ao rolar a página com o vídeo com som',
-    ariaLabel: 'Mini player automático',
+    textContent: t('ovAutoPipLabel'),
+    title: t('ovAutoPipTitle'),
+    ariaLabel: t('ovAutoPipAria'),
   });
-  const dlBtn = h('button', { title: 'Baixar vídeo', ariaLabel: 'Baixar vídeo' }, icon(ICON_DOWNLOAD), 'Baixar');
+  const dlBtn = h('button', { title: t('ovDownloadTitle'), ariaLabel: t('ovDownloadTitle') }, icon(ICON_DOWNLOAD), t('ovDownloadLabel'));
   const bar = h(
     'div',
     { className: 'bar', hidden: true },
@@ -219,11 +220,11 @@
     h('div', { className: 'row' }, muteBtn, pipBtn, autoBtn, dlBtn)
   );
 
-  const canvas = h('canvas', { title: 'Voltar ao vídeo', role: 'button', tabIndex: 0, ariaLabel: 'Voltar ao vídeo' });
+  const canvas = h('canvas', { title: t('ovBackToVideo'), role: 'button', tabIndex: 0, ariaLabel: t('ovBackToVideo') });
   const ctx = canvas.getContext('2d');
-  const miniPlay = h('button', { textContent: '❚❚', title: 'Pausar/continuar', ariaLabel: 'Pausar ou continuar' });
-  const miniPip = h('button', { title: 'Abrir em janela PiP', ariaLabel: 'Abrir em janela PiP' }, icon(ICON_PIP));
-  const miniClose = h('button', { textContent: '✕', title: 'Fechar', ariaLabel: 'Fechar mini player' });
+  const miniPlay = h('button', { textContent: '❚❚', title: t('ovPlayPauseTitle'), ariaLabel: t('ovPlayPauseAria') });
+  const miniPip = h('button', { title: t('ovOpenPip'), ariaLabel: t('ovOpenPip') }, icon(ICON_PIP));
+  const miniClose = h('button', { textContent: '✕', title: t('ovCloseTitle'), ariaLabel: t('ovCloseAria') });
   const prog = h('div', { className: 'prog' });
   const mini = h(
     'div',
@@ -288,7 +289,7 @@
   }
 
   let muteKeyText = '';
-  const muteText = () => 'Ativar/desativar o som' + muteKeyText;
+  const muteText = () => t('ovMuteTitle') + muteKeyText;
 
   // Botão alternável: classe visual + aria-pressed.
   function setPressed(btn, on) {
@@ -302,7 +303,7 @@
     setPressed(autoBtn, settings.autoPip);
     const muteKey = speediaPretty(settings.shortcuts.mute);
     muteKeyText = muteKey ? ` (${muteKey})` : '';
-    muteBtn.title = 'Ativar/desativar o som' + muteKeyText;
+    muteBtn.title = t('ovMuteTitle') + muteKeyText;
     muteBtn.setAttribute('aria-label', muteText() + (muteLabel.textContent ? ': ' + muteLabel.textContent.toLowerCase() : ''));
   }
 
@@ -326,7 +327,7 @@
     const i = SPEEDS.indexOf(settings.speed);
     const next = SPEEDS[Math.min(SPEEDS.length - 1, Math.max(0, i + dir))];
     if (next !== settings.speed) setSpeed(next);
-    toast('Velocidade: ' + next + '×');
+    toast(t('toastSpeed', next));
   }
 
   // ---------------------------------------------------------------- mini player / PiP
@@ -446,7 +447,7 @@
       v.removeAttribute('disablepictureinpicture');
       await v.requestPictureInPicture();
     } catch (e) {
-      toast('Não foi possível abrir o PiP: ' + e.message);
+      toast(t('toastPipFail', e.message));
     }
   }
 
@@ -537,8 +538,8 @@
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
       mutedIcon.toggleAttribute('hidden', sound);
-      muteLabel.textContent = sound ? 'Som' : 'Mudo';
-      muteBtn.setAttribute('aria-label', muteText() + (sound ? ': som' : ': mudo'));
+      muteLabel.textContent = sound ? t('ovSoundLabel') : t('ovMutedLabel');
+      muteBtn.setAttribute('aria-label', muteText() + (': ' + t(sound ? 'ovMuteStateOn' : 'ovMuteStateOff')));
     } else {
       bar.hidden = true;
     }
@@ -692,15 +693,15 @@
       const combo = speediaCombo(e);
       const action = combo && Object.keys(settings.shortcuts).find((id) => settings.shortcuts[id] === combo);
       if (!action) return;
-      const t = e.composedPath()[0];
-      if (t instanceof Element && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const tgt = e.composedPath()[0];
+      if (tgt instanceof Element && (tgt.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName))) return;
       if (action === 'speedUp' || action === 'speedDown' || action === 'speedReset') {
         if (!active && !pinned) return;
         e.preventDefault();
         e.stopImmediatePropagation();
         if (action === 'speedReset') {
           setSpeed(1);
-          toast('Velocidade: 1×');
+          toast(t('toastSpeed', 1));
         } else {
           stepSpeed(action === 'speedUp' ? 1 : -1);
         }
@@ -734,7 +735,7 @@
             addedControls = v;
           }
         },
-        (err) => toast('Não foi possível abrir a tela cheia: ' + err.message)
+        (err) => toast(t('toastFullscreenFail', err.message))
       );
     },
     true

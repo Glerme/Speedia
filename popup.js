@@ -1,20 +1,19 @@
 (() => {
   'use strict';
 
-  // Textos da interface (PT-BR) concentrados aqui para facilitar a localização.
+  // Textos da interface vêm de _locales via speediaMsg.
   const T = {
-    pressKey: 'Pressione…',
-    none: 'Nenhum',
-    keyTitle: 'Clique e pressione a nova tecla (Esc cancela)',
-    keyAria: (label, pretty) => `Atalho de ${label}: ${pretty}. Clique para alterar`,
-    clearTitle: 'Desativar este atalho',
-    clearAria: (label) => 'Desativar o atalho: ' + label,
-    recording: (label) => `Pressione a nova tecla para “${label}”. Esc cancela.`,
-    conflict: (pretty, other) => `${pretty} já era de “${other}”; esse atalho foi desativado.`,
-    saved: 'Atalho salvo.',
-    cleared: (label) => `Atalho de “${label}” desativado.`,
-    reset: 'Atalhos restaurados para o padrão.',
-    undo: 'Desfazer',
+    pressKey: speediaMsg('popupPressKey'),
+    none: speediaMsg('popupNone'),
+    keyTitle: speediaMsg('popupKeyTitle'),
+    keyAria: (label, pretty) => speediaMsg('popupKeyAria', label, pretty),
+    clearTitle: speediaMsg('popupClearTitle'),
+    clearAria: (label) => speediaMsg('popupClearAria', label),
+    recording: (label) => speediaMsg('popupRecording', label),
+    conflict: (pretty, other) => speediaMsg('popupConflict', pretty, other),
+    saved: speediaMsg('popupSaved'),
+    cleared: (label) => speediaMsg('popupCleared', label),
+    reset: speediaMsg('popupResetDone'),
   };
 
   const list = document.getElementById('shortcuts');
@@ -29,6 +28,7 @@
   let undoSnapshot = null;
   let statusTimer = 0;
 
+  speediaApplyI18n();
   document.getElementById('version').textContent = 'v' + chrome.runtime.getManifest().version;
 
   function h(tag, props, ...children) {

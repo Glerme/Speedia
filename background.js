@@ -8,11 +8,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   try {
     url = new URL(msg.url);
   } catch {
-    sendResponse({ ok: false, error: 'URL inválida' });
+    sendResponse({ ok: false, error: chrome.i18n.getMessage('errInvalidUrl') });
     return;
   }
   if (url.protocol !== 'https:' || !ALLOWED_HOSTS.test(url.hostname)) {
-    sendResponse({ ok: false, error: 'origem não permitida' });
+    sendResponse({ ok: false, error: chrome.i18n.getMessage('errOriginNotAllowed') });
     return;
   }
 

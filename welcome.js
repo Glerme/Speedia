@@ -23,7 +23,7 @@ function renderShortcuts(saved) {
       td.append(kbd);
     } else {
       td.className = 'off';
-      td.textContent = 'Desativado';
+      td.textContent = speediaMsg('welcomeDisabled');
     }
 
     tr.append(th, td);
@@ -31,6 +31,7 @@ function renderShortcuts(saved) {
   }
 }
 
+speediaApplyI18n();
 renderShortcuts({});
 chrome.storage.sync.get('shortcuts', (res) => {
   if (!chrome.runtime.lastError) renderShortcuts(res?.shortcuts);

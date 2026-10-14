@@ -1,0 +1,322 @@
+{
+  "extName": {
+    "message": "Speedia",
+    "description": "Nome da extensão (marca; igual nos dois idiomas)."
+  },
+  "extDescription": {
+    "message": "Video speed control, scroll-triggered mini player/PiP and video downloads on Instagram and X/Twitter.",
+    "description": "Descrição da extensão nas lojas (máx. 132 caracteres)."
+  },
+  "actionTitle": {
+    "message": "Speedia",
+    "description": "Tooltip do ícone da extensão na barra do navegador."
+  },
+  "actFullscreenLabel": {
+    "message": "Fullscreen",
+    "description": "Rótulo do atalho de tela cheia."
+  },
+  "actFullscreenHint": {
+    "message": "On the video that is playing sound",
+    "description": "Dica do atalho de tela cheia."
+  },
+  "actMuteLabel": {
+    "message": "Mute/unmute",
+    "description": "Rótulo do atalho de som."
+  },
+  "actMuteHint": {
+    "message": "On the video on screen",
+    "description": "Dica do atalho de som."
+  },
+  "actSpeedUpLabel": {
+    "message": "Increase speed",
+    "description": "Rótulo do atalho de aumentar velocidade."
+  },
+  "actSpeedUpHint": {
+    "message": "Goes up one step, e.g. 1× → 1.25×",
+    "description": "Dica do atalho de aumentar velocidade."
+  },
+  "actSpeedDownLabel": {
+    "message": "Decrease speed",
+    "description": "Rótulo do atalho de diminuir velocidade."
+  },
+  "actSpeedDownHint": {
+    "message": "Goes down one step, e.g. 1.25× → 1×",
+    "description": "Dica do atalho de diminuir velocidade."
+  },
+  "actSpeedResetLabel": {
+    "message": "Reset speed",
+    "description": "Rótulo do atalho de resetar velocidade."
+  },
+  "actSpeedResetHint": {
+    "message": "Back to 1×",
+    "description": "Dica do atalho de resetar velocidade."
+  },
+  "keySpace": {
+    "message": "Space",
+    "description": "Nome da tecla Espaço exibido num atalho."
+  },
+  "popupShortcutsHeading": {
+    "message": "Keyboard shortcuts",
+    "description": "Título da seção de atalhos no popup."
+  },
+  "popupMiniPlayerHeading": {
+    "message": "Mini player",
+    "description": "Título da seção do mini player no popup."
+  },
+  "popupAutoPipLabel": {
+    "message": "Auto PiP",
+    "description": "Rótulo do interruptor de PiP automático (popup)."
+  },
+  "popupAutoPipHint": {
+    "message": "Automatic mini player when you scroll past a video that is playing sound",
+    "description": "Descrição do interruptor de PiP automático (popup)."
+  },
+  "popupUndo": {
+    "message": "Undo",
+    "description": "Botão que desfaz a última mudança de atalhos."
+  },
+  "popupReset": {
+    "message": "Restore default shortcuts",
+    "description": "Botão que restaura os atalhos padrão."
+  },
+  "popupPressKey": {
+    "message": "Press…",
+    "description": "Texto do botão de atalho enquanto espera uma tecla."
+  },
+  "popupNone": {
+    "message": "None",
+    "description": "Texto do botão de atalho quando não há tecla definida."
+  },
+  "popupKeyTitle": {
+    "message": "Click and press the new key (Esc cancels)",
+    "description": "Tooltip do botão de atalho."
+  },
+  "popupKeyAria": {
+    "message": "Shortcut for $1: $2. Click to change",
+    "description": "Aria-label do botão de atalho. $1 = nome da ação; $2 = tecla atual."
+  },
+  "popupClearTitle": {
+    "message": "Disable this shortcut",
+    "description": "Tooltip do botão ✕ que desativa o atalho."
+  },
+  "popupClearAria": {
+    "message": "Disable shortcut: $1",
+    "description": "Aria-label do botão ✕. $1 = nome da ação."
+  },
+  "popupRecording": {
+    "message": "Press the new key for “$1”. Esc cancels.",
+    "description": "Aviso de status ao gravar um atalho. $1 = nome da ação."
+  },
+  "popupConflict": {
+    "message": "$1 was assigned to “$2”; that shortcut has been disabled.",
+    "description": "Aviso de conflito de atalho. $1 = tecla; $2 = ação que perdeu o atalho."
+  },
+  "popupSaved": {
+    "message": "Shortcut saved.",
+    "description": "Aviso de status após salvar um atalho."
+  },
+  "popupCleared": {
+    "message": "Shortcut for “$1” disabled.",
+    "description": "Aviso de status após desativar um atalho. $1 = nome da ação."
+  },
+  "popupResetDone": {
+    "message": "Shortcuts restored to defaults.",
+    "description": "Aviso de status após restaurar os atalhos padrão."
+  },
+  "welcomeTitle": {
+    "message": "Welcome to Speedia",
+    "description": "Título da aba da página de boas-vindas."
+  },
+  "welcomeTagline": {
+    "message": "Speed control, mini player and video downloads on Instagram and X/Twitter.",
+    "description": "Subtítulo da página de boas-vindas."
+  },
+  "welcomeThanks": {
+    "message": "Thanks for installing! Here is what Speedia does.",
+    "description": "Agradecimento na página de boas-vindas."
+  },
+  "welcomeFeaturesHeading": {
+    "message": "Features",
+    "description": "Título da seção de recursos."
+  },
+  "welcomeFeatSpeedTitle": {
+    "message": "Speed control",
+    "description": "Título do card de velocidade."
+  },
+  "welcomeFeatSpeedDesc": {
+    "message": "Speed up or slow down any video, from 0.5× to 3×, right in the player.",
+    "description": "Descrição do card de velocidade."
+  },
+  "welcomeFeatPipTitle": {
+    "message": "Mini player (PiP) on scroll",
+    "description": "Título do card de mini player."
+  },
+  "welcomeFeatPipDesc": {
+    "message": "As you scroll, the video stays visible in a small floating window.",
+    "description": "Descrição do card de mini player."
+  },
+  "welcomeFeatDownloadTitle": {
+    "message": "Video downloads",
+    "description": "Título do card de download."
+  },
+  "welcomeFeatDownloadDesc": {
+    "message": "Download videos from Instagram and X/Twitter with one click.",
+    "description": "Descrição do card de download."
+  },
+  "welcomeShortcutsHeading": {
+    "message": "Your shortcuts",
+    "description": "Título da seção de atalhos."
+  },
+  "welcomeTableCaption": {
+    "message": "Current Speedia keyboard shortcuts",
+    "description": "Legenda (só para leitores de tela) da tabela de atalhos."
+  },
+  "welcomeColAction": {
+    "message": "Action",
+    "description": "Cabeçalho da coluna de ação."
+  },
+  "welcomeColShortcut": {
+    "message": "Shortcut",
+    "description": "Cabeçalho da coluna de atalho."
+  },
+  "welcomeDisabled": {
+    "message": "Disabled",
+    "description": "Texto da célula quando o atalho está desativado."
+  },
+  "welcomeTip": {
+    "message": "💡 Want to change them? Click the Speedia icon in the browser toolbar to customize your shortcuts.",
+    "description": "Dica sobre como personalizar atalhos."
+  },
+  "welcomeStartHeading": {
+    "message": "Get started",
+    "description": "Título da seção final."
+  },
+  "welcomeOpenInstagram": {
+    "message": "Open Instagram",
+    "description": "Botão que abre o Instagram."
+  },
+  "welcomeOpenX": {
+    "message": "Open X",
+    "description": "Botão que abre o X."
+  },
+  "ovSpeedTitle": {
+    "message": "Speed $1×",
+    "description": "Tooltip/aria-label do botão de velocidade. $1 = valor, ex.: 1.5."
+  },
+  "ovPipTitle": {
+    "message": "Picture-in-Picture (floating window)",
+    "description": "Tooltip do botão PiP."
+  },
+  "ovPipAria": {
+    "message": "Picture-in-Picture",
+    "description": "Aria-label do botão PiP."
+  },
+  "ovPipLabel": {
+    "message": "PiP",
+    "description": "Texto do botão PiP."
+  },
+  "ovMuteTitle": {
+    "message": "Mute/unmute",
+    "description": "Tooltip/aria-label base do botão de som."
+  },
+  "ovMuteStateOn": {
+    "message": "sound on",
+    "description": "Estado lido pelo leitor de tela quando o vídeo tem som (minúsculo)."
+  },
+  "ovMuteStateOff": {
+    "message": "muted",
+    "description": "Estado lido pelo leitor de tela quando o vídeo está mudo (minúsculo)."
+  },
+  "ovSoundLabel": {
+    "message": "Sound",
+    "description": "Texto do botão de som quando o vídeo tem som."
+  },
+  "ovMutedLabel": {
+    "message": "Muted",
+    "description": "Texto do botão de som quando o vídeo está mudo."
+  },
+  "ovAutoPipLabel": {
+    "message": "Auto PiP",
+    "description": "Texto do botão de PiP automático."
+  },
+  "ovAutoPipTitle": {
+    "message": "Automatic mini player when you scroll past a video that is playing sound",
+    "description": "Tooltip do botão de PiP automático."
+  },
+  "ovAutoPipAria": {
+    "message": "Automatic mini player",
+    "description": "Aria-label do botão de PiP automático."
+  },
+  "ovDownloadTitle": {
+    "message": "Download video",
+    "description": "Tooltip/aria-label do botão de download."
+  },
+  "ovDownloadLabel": {
+    "message": "Download",
+    "description": "Texto do botão de download."
+  },
+  "ovBackToVideo": {
+    "message": "Back to video",
+    "description": "Tooltip/aria-label do mini player (rola até o vídeo)."
+  },
+  "ovPlayPauseTitle": {
+    "message": "Pause/resume",
+    "description": "Tooltip do botão play/pause do mini player."
+  },
+  "ovPlayPauseAria": {
+    "message": "Pause or resume",
+    "description": "Aria-label do botão play/pause do mini player."
+  },
+  "ovOpenPip": {
+    "message": "Open in PiP window",
+    "description": "Tooltip/aria-label do botão que abre o PiP nativo."
+  },
+  "ovCloseTitle": {
+    "message": "Close",
+    "description": "Tooltip do botão de fechar o mini player."
+  },
+  "ovCloseAria": {
+    "message": "Close mini player",
+    "description": "Aria-label do botão de fechar o mini player."
+  },
+  "toastNoMedia": {
+    "message": "Could not find this video’s file. Reload the page and play the video before downloading.",
+    "description": "Toast quando não há URL de mídia para baixar."
+  },
+  "toastDownloadStarted": {
+    "message": "Download started",
+    "description": "Toast de download iniciado."
+  },
+  "toastDownloadFailed": {
+    "message": "Download failed: $1",
+    "description": "Toast de falha no download. $1 = motivo."
+  },
+  "toastUnknownError": {
+    "message": "unknown error",
+    "description": "Motivo exibido quando o erro de download não tem mensagem."
+  },
+  "toastReloaded": {
+    "message": "The extension was reloaded. Refresh the page.",
+    "description": "Toast quando o contexto da extensão foi invalidado."
+  },
+  "toastSpeed": {
+    "message": "Speed: $1×",
+    "description": "Toast ao mudar a velocidade. $1 = valor."
+  },
+  "toastPipFail": {
+    "message": "Could not open PiP: $1",
+    "description": "Toast de falha ao abrir o PiP. $1 = mensagem do navegador."
+  },
+  "toastFullscreenFail": {
+    "message": "Could not enter fullscreen: $1",
+    "description": "Toast de falha ao abrir a tela cheia. $1 = mensagem do navegador."
+  },
+  "errInvalidUrl": {
+    "message": "Invalid URL",
+    "description": "Erro do download (service worker): URL malformada."
+  },
+  "errOriginNotAllowed": {
+    "message": "origin not allowed",
+    "description": "Erro do download (service worker): host fora da lista permitida."
+  }
+}
