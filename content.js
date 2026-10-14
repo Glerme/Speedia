@@ -581,9 +581,10 @@
     if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
     const list = document.elementsFromPoint(x, y);
     const idx = list.indexOf(v);
-    if (idx < 0) return null;
+    // Vídeo fora do hit-test (pointer-events: none etc.): compara geometricamente com qualquer fixed/sticky no ponto.
+    const end = idx < 0 ? list.length : idx;
     const player = v.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]') || v.parentElement;
-    for (let i = 0; i < idx; i++) {
+    for (let i = 0; i < end; i++) {
       const el = list[i];
       if (el === host || el.contains(v) || (player && player.contains(el))) continue;
       for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
@@ -594,6 +595,19 @@
       }
     }
     return null;
+  }
+
+  // Desce y abaixo de cabeçalhos fixos (máx. 3 empilhados); Infinity se coberto por barra inferior.
+  function clearTop(v, x, y) {
+    for (let i = 0; i < 3; i++) {
+      const occ = occluderAt(v, x + 4, y + 4);
+      if (!occ) break;
+      const ob = occ.getBoundingClientRect();
+      if (ob.top > innerHeight / 2) return Infinity;
+      if (ob.bottom + 8 <= y) break;
+      y = ob.bottom + 8;
+    }
+    return y;
   }
 
   function update() {
@@ -635,36 +649,39 @@
     const onScreen = best && bestRect.bottom > 48 && bestRect.top < innerHeight - 48;
     if (onScreen) {
       const inFeed = !fs && isIG && !!best.closest('article');
-      bar.hidden = false;
-      // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
-      bar.classList.toggle('side', !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname));
-      let x = bestRect.left - 12 - bar.offsetWidth;
-      let y = Math.max(bestRect.top, 8);
-      if (bar.classList.contains('side') && x < 8) bar.classList.remove('side');
-      if (!bar.classList.contains('side')) {
-        x = Math.max(bestRect.left, 0) + 8;
-        // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
-        y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
+      const wantSide = !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname);
+      let x = Math.max(bestRect.left, 0) + 8;
+      // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
+      let y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
+      let hideBar = false;
+      // Decide a oclusão antes de mostrar a barra: ler offsetWidth de uma barra recém-exibida
+      // força o estilo e dispara a transição de saída, deixando um fantasma em (0,0).
+      if (!fs && !wantSide) {
+        y = clearTop(best, x, y);
+        hideBar = y > bestRect.bottom - 48;
       }
-      if (fs) {
-        x = 8;
-        y = 8;
-      } else if (!bar.classList.contains('side')) {
-        // Desce abaixo de cabeçalhos fixos que cobrem o topo do vídeo (máx. 3 empilhados).
-        for (let i = 0; i < 3; i++) {
-          const occ = occluderAt(best, x + 4, y + 4);
-          if (!occ) break;
-          const ob = occ.getBoundingClientRect();
-          if (ob.top > innerHeight / 2) {
-            y = Infinity;
-            break;
+      if (hideBar) {
+        bar.hidden = true;
+      } else {
+        bar.hidden = false;
+        // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
+        bar.classList.toggle('side', wantSide);
+        if (wantSide) {
+          x = bestRect.left - 12 - bar.offsetWidth;
+          y = Math.max(bestRect.top, 8);
+          if (x < 8) {
+            bar.classList.remove('side');
+            x = Math.max(bestRect.left, 0) + 8;
+            y = clearTop(best, x, Math.max(bestRect.top + 8, 8));
+            if (y > bestRect.bottom - 48) bar.hidden = true;
           }
-          if (ob.bottom + 8 <= y) break;
-          y = ob.bottom + 8;
         }
-        if (y > bestRect.bottom - 48) bar.hidden = true;
+        if (fs) {
+          x = 8;
+          y = 8;
+        }
+        if (!bar.hidden) bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       }
-      if (!bar.hidden) bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       setPressed(pipBtn, document.pictureInPictureElement === best);
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
