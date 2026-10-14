@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { SPEEDIA_DEFAULT_ACCENT, speediaApplyLook, speediaCacheLook, speediaCachedLook, speediaOn, speediaValidAccent, speediaValidTheme } from './theme';
+import { SPEEDIA_DEFAULT_ACCENT, speediaApplyLook, speediaCacheLook, speediaCachedLook, speediaOn, speediaValidAccent, speediaValidTheme, type SpeediaTheme } from './theme';
 import { speediaApplyI18n, speediaMsg } from '../shared/i18n';
 import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty } from '../shared/shortcuts';
+
+type Shortcuts = Record<string, string>;
+// Objeto guardado em chrome.storage.sync.
+interface Settings { autoPip: boolean; shortcuts: Shortcuts; theme: string; accent: string }
 
 (() => {
   'use strict';
@@ -11,32 +14,33 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     pressKey: speediaMsg('popupPressKey'),
     none: speediaMsg('popupNone'),
     keyTitle: speediaMsg('popupKeyTitle'),
-    keyAria: (label, pretty) => speediaMsg('popupKeyAria', label, pretty),
+    keyAria: (label: string, pretty: string) => speediaMsg('popupKeyAria', label, pretty),
     clearTitle: speediaMsg('popupClearTitle'),
-    clearAria: (label) => speediaMsg('popupClearAria', label),
-    recording: (label) => speediaMsg('popupRecording', label),
-    conflict: (pretty, other) => speediaMsg('popupConflict', pretty, other),
+    clearAria: (label: string) => speediaMsg('popupClearAria', label),
+    recording: (label: string) => speediaMsg('popupRecording', label),
+    conflict: (pretty: string, other: string) => speediaMsg('popupConflict', pretty, other),
     saved: speediaMsg('popupSaved'),
-    cleared: (label) => speediaMsg('popupCleared', label),
+    cleared: (label: string) => speediaMsg('popupCleared', label),
     reset: speediaMsg('popupResetDone'),
   };
 
-  const list = document.getElementById('shortcuts');
-  const autoPip = document.getElementById('autoPip');
-  const bar = document.getElementById('bar');
-  const $reset = document.getElementById('reset');
-  const statusText = document.getElementById('statusText');
-  const undoBtn = document.getElementById('undo');
+  const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const list = byId('shortcuts');
+  const autoPip = byId<HTMLInputElement>('autoPip');
+  const bar = byId('bar');
+  const $reset = byId<HTMLButtonElement>('reset');
+  const statusText = byId('statusText');
+  const undoBtn = byId<HTMLButtonElement>('undo');
   let shortcuts = speediaDefaultShortcuts();
-  let recording = null; // id da ação esperando uma tecla
-  let flashId = null; // linha a destacar no próximo render
-  let undoSnapshot = null;
+  let recording: string | null = null; // id da ação esperando uma tecla
+  let flashId: string | null = null; // linha a destacar no próximo render
+  let undoSnapshot: Shortcuts | null = null;
   let statusTimer = 0;
 
   speediaApplyI18n();
-  document.getElementById('version').textContent = 'v' + chrome.runtime.getManifest().version;
+  byId('version').textContent = 'v' + chrome.runtime.getManifest().version;
 
-  function h(tag, props, ...children) {
+  function h<K extends keyof HTMLElementTagNameMap>(tag: K, props?: Partial<HTMLElementTagNameMap[K]>, ...children: (Node | string)[]): HTMLElementTagNameMap[K] {
     const el = document.createElement(tag);
     Object.assign(el, props);
     el.append(...children);
@@ -47,7 +51,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     chrome.storage.sync.set({ shortcuts }).catch(() => {});
   }
 
-  function say(text, { undo = false } = {}) {
+  function say(text: string, { undo = false } = {}) {
     clearTimeout(statusTimer);
     statusText.textContent = text;
     if (!undo) undoSnapshot = null;
@@ -67,8 +71,8 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     undoSnapshot = null;
   }
 
-  function focusKey(id) {
-    list.querySelectorAll('.key')[SPEEDIA_ACTIONS.findIndex((a) => a.id === id)]?.focus();
+  function focusKey(id: string) {
+    list.querySelectorAll<HTMLElement>('.key')[SPEEDIA_ACTIONS.findIndex((a) => a.id === id)]?.focus();
   }
 
   // Guarda o estado atual para o botão Desfazer antes de uma mudança destrutiva.
@@ -123,7 +127,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
       })
     );
     flashId = null;
-    if (recording) list.querySelector('.rec')?.focus();
+    if (recording) list.querySelector<HTMLElement>('.rec')?.focus();
   }
 
   function cancelRecording(refocus = true) {
@@ -137,7 +141,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
 
   window.addEventListener(
     'keydown',
-    (e) => {
+    (e: KeyboardEvent) => {
       if (!recording) return;
       if (e.key === 'Tab') return cancelRecording(); // deixa o foco seguir
       e.preventDefault();
@@ -148,7 +152,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
       const target = recording;
       undoSnapshot = snapshot();
       // A mesma tecla não pode disparar duas ações: a anterior perde o atalho.
-      let taken = null;
+      let taken: (typeof SPEEDIA_ACTIONS)[number] | undefined;
       for (const id in shortcuts) {
         if (id !== target && shortcuts[id] === combo) {
           shortcuts[id] = '';
@@ -169,7 +173,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
 
   // Clicar fora da lista cancela a gravação (dentro dela, os próprios botões cuidam disso).
   document.addEventListener('mousedown', (e) => {
-    if (recording && !e.target.closest('#shortcuts')) cancelRecording(false);
+    if (recording && !(e.target as Element).closest('#shortcuts')) cancelRecording(false);
   });
 
   undoBtn.onclick = () => {
@@ -191,7 +195,8 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     render();
   };
 
-  chrome.storage.sync.get({ autoPip: true, shortcuts: {} }).then((s) => {
+  const defaults: Pick<Settings, 'autoPip' | 'shortcuts'> = { autoPip: true, shortcuts: {} };
+  (chrome.storage.sync.get(defaults) as Promise<typeof defaults>).then((s) => {
     autoPip.checked = s.autoPip;
     shortcuts = { ...speediaDefaultShortcuts(), ...s.shortcuts };
     render();
@@ -202,26 +207,26 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     ['#3b82f6', 'popupColorBlue'], ['#06b6d4', 'popupColorCyan'], ['#22c55e', 'popupColorGreen'], ['#f59e0b', 'popupColorAmber'],
     ['#f97316', 'popupColorOrange'], ['#f43f5e', 'popupColorRose'], [SPEEDIA_DEFAULT_ACCENT, 'popupColorPurple'], ['#4b5563', 'popupColorGraphite'],
   ];
-  const ring = document.getElementById('ring');
-  const ringCenter = document.getElementById('ringCenter');
-  const ringDot = document.getElementById('ringDot');
+  const ring = byId<HTMLCanvasElement>('ring');
+  const ringCenter = byId('ringCenter');
+  const ringDot = byId('ringDot');
   const dark = matchMedia('(prefers-color-scheme: dark)');
   const RING = { size: 112, outer: 56, inner: 38 };
-  let look = { theme: speediaValidTheme(speediaCachedLook().theme), accent: speediaValidAccent(speediaCachedLook().accent) };
+  let look: { theme: SpeediaTheme; accent: string } = { theme: speediaValidTheme(speediaCachedLook().theme), accent: speediaValidAccent(speediaCachedLook().accent) };
   let hue = 0;
   let dragging = false;
-  let pending = {};
+  let pending: Partial<Pick<Settings, 'theme' | 'accent'>> = {};
   let saveTimer = 0;
 
-  function hslToHex(h, s = 75, l = 55) {
+  function hslToHex(h: number, s = 75, l = 55) {
     s /= 100; l /= 100;
-    const k = (n) => (n + h / 30) % 12;
+    const k = (n: number) => (n + h / 30) % 12;
     const a = s * Math.min(l, 1 - l);
-    const f = (n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+    const f = (n: number) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
     return '#' + [f(0), f(8), f(4)].map((x) => x.toString(16).padStart(2, '0')).join('');
   }
 
-  function hexToHue(hex) {
+  function hexToHue(hex: string) {
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
     const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
     if (!d) return hue; // cinza não tem matiz: mantém o anterior
@@ -234,10 +239,10 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     speediaCacheLook(look);
     const { accent } = look;
     ringCenter.textContent = accent;
-    for (const i of document.querySelectorAll('input[name=theme]')) i.checked = i.value === look.theme;
-    for (const i of document.querySelectorAll('input[name=accent]')) i.checked = i.value === accent;
+    for (const i of document.querySelectorAll<HTMLInputElement>('input[name=theme]')) i.checked = i.value === look.theme;
+    for (const i of document.querySelectorAll<HTMLInputElement>('input[name=accent]')) i.checked = i.value === accent;
     if (hslToHex(hue) !== accent) hue = hexToHue(accent); // evita o arredondamento do hex travar as setas
-    ring.setAttribute('aria-valuenow', hue);
+    ring.setAttribute('aria-valuenow', String(hue));
     ring.setAttribute('aria-valuetext', accent);
     const a = ((hue - 90) * Math.PI) / 180, r = (RING.outer + RING.inner) / 2;
     ringDot.style.left = RING.size / 2 + r * Math.cos(a) + 'px';
@@ -245,7 +250,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
   }
 
   // Grava com debounce: arrastar o anel dispara muitas mudanças.
-  function saveLook(key) {
+  function saveLook(key: 'theme' | 'accent') {
     pending[key] = look[key];
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -263,7 +268,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     pending = {};
   });
 
-  function setAccent(v) {
+  function setAccent(v: unknown) {
     look.accent = speediaValidAccent(v);
     applyLook();
     saveLook('accent');
@@ -272,7 +277,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
   function drawRing() {
     const dpr = window.devicePixelRatio || 1;
     ring.width = ring.height = RING.size * dpr;
-    const ctx = ring.getContext('2d');
+    const ctx = ring.getContext('2d')!;
     ctx.scale(dpr, dpr);
     const c = RING.size / 2;
     const g = ctx.createConicGradient(-Math.PI / 2, c, c);
@@ -284,7 +289,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
     ctx.fill('evenodd');
   }
 
-  function pickHue(e) {
+  function pickHue(e: PointerEvent) {
     const r = ring.getBoundingClientRect();
     const a = Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2);
     setAccent(hslToHex(Math.round(((a * 180) / Math.PI + 450) % 360)));
@@ -297,13 +302,13 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
   ring.onpointermove = (e) => dragging && pickHue(e);
   ring.onpointerup = ring.onpointercancel = () => (dragging = false);
   ring.onkeydown = (e) => {
-    const step = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 10, PageDown: -10 }[e.key];
+    const step = ({ ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 10, PageDown: -10 } as Record<string, number | undefined>)[e.key];
     if (!step) return;
     e.preventDefault();
     setAccent(hslToHex((hue + step * (e.shiftKey ? 10 : 1) + 360) % 360));
   };
 
-  const swatches = document.getElementById('swatches');
+  const swatches = byId('swatches');
   swatches.append(
     ...SWATCHES.map(([hex, key]) => {
       const input = h('input', { type: 'radio', name: 'accent', value: hex, onchange: () => setAccent(hex) });
@@ -314,14 +319,14 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
       return h('label', { className: 'sw', title: speediaMsg(key) }, input, dot);
     })
   );
-  for (const i of document.querySelectorAll('input[name=theme]')) {
+  for (const i of document.querySelectorAll<HTMLInputElement>('input[name=theme]')) {
     i.onchange = () => {
       look.theme = speediaValidTheme(i.value);
       applyLook();
       saveLook('theme');
     };
   }
-  document.getElementById('accentReset').onclick = () => setAccent(SPEEDIA_DEFAULT_ACCENT);
+  byId('accentReset').onclick = () => setAccent(SPEEDIA_DEFAULT_ACCENT);
   dark.onchange = applyLook;
   drawRing();
   applyLook();
