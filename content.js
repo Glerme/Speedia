@@ -564,8 +564,41 @@
     requestAnimationFrame(update);
   }
 
+  // Oclusão por barras fixas do site (cabeçalho do X, nav do Instagram). Estilos cacheados por frame.
+  let styleCache = new Map();
+  function isFixedish(el) {
+    let p = styleCache.get(el);
+    if (p === undefined) {
+      const pos = getComputedStyle(el).position;
+      p = pos === 'fixed' || pos === 'sticky';
+      styleCache.set(el, p);
+    }
+    return p;
+  }
+
+  // Oclusor = ancestral fixed/sticky, fora do vídeo e do player, que cobre o ponto antes de o vídeo aparecer.
+  function occluderAt(v, x, y) {
+    if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
+    const list = document.elementsFromPoint(x, y);
+    const idx = list.indexOf(v);
+    if (idx < 0) return null;
+    const player = v.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]') || v.parentElement;
+    for (let i = 0; i < idx; i++) {
+      const el = list[i];
+      if (el === host || el.contains(v) || (player && player.contains(el))) continue;
+      for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+        if (isFixedish(n)) {
+          if (!n.contains(v)) return n;
+          break;
+        }
+      }
+    }
+    return null;
+  }
+
   function update() {
     scheduled = false;
+    styleCache = new Map();
     if (!host.isConnected && !host.parentNode) document.documentElement.append(host);
     syncHost();
     const fs = host.parentNode !== document.documentElement;
@@ -616,8 +649,22 @@
       if (fs) {
         x = 8;
         y = 8;
+      } else if (!bar.classList.contains('side')) {
+        // Desce abaixo de cabeçalhos fixos que cobrem o topo do vídeo (máx. 3 empilhados).
+        for (let i = 0; i < 3; i++) {
+          const occ = occluderAt(best, x + 4, y + 4);
+          if (!occ) break;
+          const ob = occ.getBoundingClientRect();
+          if (ob.top > innerHeight / 2) {
+            y = Infinity;
+            break;
+          }
+          if (ob.bottom + 8 <= y) break;
+          y = ob.bottom + 8;
+        }
+        if (y > bestRect.bottom - 48) bar.hidden = true;
       }
-      bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
+      if (!bar.hidden) bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       setPressed(pipBtn, document.pictureInPictureElement === best);
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
@@ -632,11 +679,27 @@
     if (isIG && !dragging) {
       if (onScreen && isFinite(best.duration) && best.duration > 0) {
         seekVideo = best;
-        const y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
-        seek.style.transform = `translate(${Math.round(bestRect.left - ox)}px, ${Math.round(y - oy)}px)`;
-        seek.style.width = Math.round(bestRect.width) + 'px';
-        seek.hidden = false;
-        if (!seekRaf) seekRaf = requestAnimationFrame(seekTick);
+        let y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
+        // Sobe até o topo de barras fixas inferiores; some se sobrar pouco vídeo.
+        if (!fs) {
+          const sx = Math.min(Math.max(bestRect.left, 0) + 8, innerWidth - 1);
+          for (let i = 0; i < 2; i++) {
+            const occ = occluderAt(best, sx, y + SEEK_H / 2);
+            if (!occ) break;
+            const nt = occ.getBoundingClientRect().top - SEEK_H;
+            if (nt >= y) break;
+            y = nt;
+          }
+        }
+        if (y < Math.max(bestRect.top, 0) + 48) {
+          seek.hidden = true;
+          seekVideo = null;
+        } else {
+          seek.style.transform = `translate(${Math.round(bestRect.left - ox)}px, ${Math.round(y - oy)}px)`;
+          seek.style.width = Math.round(bestRect.width) + 'px';
+          seek.hidden = false;
+          if (!seekRaf) seekRaf = requestAnimationFrame(seekTick);
+        }
       } else {
         seek.hidden = true;
         seekVideo = null;
