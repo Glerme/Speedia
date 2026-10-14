@@ -578,7 +578,9 @@
 
     active = best;
     const onScreen = best && bestRect.bottom > 48 && bestRect.top < innerHeight - 48;
-    if (onScreen) {
+    // Com o topo do vídeo rolado para fora, a barra ficaria presa em y=8 sobre o cabeçalho fixo da página: esconde (exceto tela cheia e coluna lateral do Reels).
+    const topCut = onScreen && !fs && bestRect.top < 0 && !(isIG && /^\/reels?\//.test(location.pathname));
+    if (onScreen && !topCut) {
       const inFeed = !fs && isIG && !!best.closest('article');
       bar.hidden = false;
       // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
