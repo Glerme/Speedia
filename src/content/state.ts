@@ -24,8 +24,8 @@ export const mutedByUs = new Set<HTMLVideoElement>();
 export interface CapturedMedia {
     id?: unknown;
     url: string;
-    duration?: number;
-    code?: string;
-    keys?: string[];
+    duration?: number | null;
+    code?: string | null;
+    keys?: string[] | null;
 }
 export const entries = new Map<unknown, CapturedMedia>();

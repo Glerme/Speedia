@@ -6,9 +6,9 @@ function isCapturedMedia(value: unknown): value is CapturedMedia {
         return false;
     const media = value as Record<string, unknown>;
     return typeof media.url === 'string' && !!media.id
-        && (media.duration === undefined || typeof media.duration === 'number')
-        && (media.code === undefined || typeof media.code === 'string')
-        && (media.keys === undefined || (Array.isArray(media.keys) && media.keys.every((key: unknown) => typeof key === 'string')));
+        && (media.duration == null || typeof media.duration === 'number')
+        && (media.code == null || typeof media.code === 'string')
+        && (media.keys == null || (Array.isArray(media.keys) && media.keys.every((key: unknown) => typeof key === 'string')));
 }
 export function registerMedia() {
     if (!STORE)
