@@ -250,6 +250,14 @@
     }, 200);
   }
 
+  // Fechar o popup logo após arrastar não pode perder a última cor.
+  addEventListener('pagehide', () => {
+    if (!Object.keys(pending).length) return;
+    clearTimeout(saveTimer);
+    chrome.storage.sync.set(pending).catch(() => {});
+    pending = {};
+  });
+
   function setAccent(v) {
     look.accent = speediaValidAccent(v);
     applyLook();
