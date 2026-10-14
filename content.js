@@ -87,18 +87,20 @@
 
   // ---------------------------------------------------------------- interface
 
-  const SEEK_H = 28; // altura da área de clique da barra de seek (CSS e posicionamento)
+  const SEEK_H = 18; // altura da faixa de seek (CSS e posicionamento); não crescer: cobre botões nativos do Instagram
 
   const CSS = `
     :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.78); --bg-strong: rgba(18,18,22,.94);
       --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.16); --press: rgba(255,255,255,.26);
       --shadow: 0 6px 24px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); --ease: cubic-bezier(.2,.8,.2,1); }
-    [hidden] { display: none !important; }
-    .bar, .seek, .time, .ctl { transition: opacity .18s var(--ease), background-color .15s, padding .15s;
+    /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
+    [hidden]:not(.bar):not(.seek):not(.mini) { display: none !important; }
+    .bar, .seek, .time, .ctl { transition: opacity .18s var(--ease), background-color .15s, padding .15s, display .18s;
       transition-behavior: allow-discrete; }
-    .mini, .toast { transition: opacity .18s var(--ease), transform .18s var(--ease); transition-behavior: allow-discrete; }
-    .bar[hidden], .mini[hidden], .toast[hidden], .seek[hidden] { display: none !important; opacity: 0; }
-    @starting-style { .bar, .mini, .toast, .seek { opacity: 0; } }
+    .mini { transition: opacity .18s var(--ease), transform .18s var(--ease), display .18s;
+      transition-behavior: allow-discrete; }
+    .bar[hidden], .mini[hidden], .seek[hidden] { display: none; opacity: 0; }
+    @starting-style { .bar, .mini, .seek { opacity: 0; } }
     button { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
       gap: 6px; cursor: pointer; min-width: 28px; min-height: 28px; padding: 6px 11px; border-radius: 999px;
       font: inherit; color: inherit; white-space: nowrap; transition: background-color .12s, color .12s, transform .12s; }
@@ -132,7 +134,6 @@
     .prog { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: var(--accent); pointer-events: none; }
     .seek { position: fixed; top: 0; left: 0; height: ${SEEK_H}px; display: flex; align-items: flex-end; cursor: pointer;
       touch-action: none; }
-    .seek:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
     .track { width: 100%; height: 4px; background: rgba(255,255,255,.35); box-shadow: 0 0 6px rgba(0,0,0,.4);
       transition: height .12s var(--ease); }
     .seek:hover .track, .seek.drag .track { height: 8px; }
@@ -145,8 +146,9 @@
       padding: 10px 16px; border-radius: 12px; background: var(--bg-strong); color: var(--fg);
       font: 500 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; box-shadow: var(--shadow);
       -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4);
-      pointer-events: none; }
-    @starting-style { .toast { transform: translateX(-50%) translateY(8px); } }
+      pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
+      transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
+    .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
@@ -237,7 +239,7 @@
 
   pipBtn.hidden = miniPip.hidden = !canPip;
 
-  const toastEl = h('div', { className: 'toast', hidden: true, role: 'status', ariaLive: 'polite', ariaAtomic: 'true' });
+  const toastEl = h('div', { className: 'toast', role: 'status', ariaLive: 'polite', ariaAtomic: 'true' });
   root.append(h('style', { textContent: CSS }), bar, seek, mini, toastEl);
 
   let seekVideo = null;
@@ -279,9 +281,9 @@
   let toastTimer = 0;
   function toast(text) {
     toastEl.textContent = text;
-    toastEl.hidden = false;
+    toastEl.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => (toastEl.hidden = true), 3500);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
   }
 
   let muteKeyText = '';
@@ -467,6 +469,7 @@
   canvas.onkeydown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
+      e.stopPropagation();
       backToVideo();
     }
   };
