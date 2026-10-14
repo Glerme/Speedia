@@ -107,17 +107,20 @@
     button:hover { background: var(--hover); }
     button:active { background: var(--press); transform: scale(.96); }
     button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
-    /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
     /* Legibilidade local: véu escuro leve só atrás do conteúdo (botões e .cur); o vidro em volta continua claro. */
-    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.34), rgba(0,0,0,.24)); }
+    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.48), rgba(0,0,0,.42)); --chip-cur: rgba(0,0,0,.5); }
     .cur { border-radius: 999px; }
     :host .toast { background: var(--chip), var(--sheen), var(--bg-strong); }
-    button:not(.on), .cur { background: var(--chip); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+    button:not(.on) { background: var(--chip); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+    .cur { background: var(--chip-cur); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
     button:not(.on):hover { background: linear-gradient(var(--hover), var(--hover)), var(--chip); }
     button:not(.on):active { background: linear-gradient(var(--press), var(--press)), var(--chip); }
+    /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
     button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), color-mix(in srgb, var(--accent) 62%, transparent);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 6px -2px rgba(255,255,255,.25), 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
     button.on:hover { filter: brightness(1.12); }
+    /* Depois das regras de box-shadow acima: o halo de foco precisa vencer. */
+    button:focus-visible:is(*, .on) { box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
     svg { flex: none; }
     .bar { position: fixed; top: 0; left: 0; display: flex; flex-direction: column; gap: 4px; padding: 5px;
       border-radius: 20px; background: var(--sheen), var(--bg); color: var(--fg); font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -158,7 +161,7 @@
       pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
     /* Liquid glass claro (bar, ctl, toast): véu escuro mínimo + brilho branco suave em degradê. O brightness(.95) escurece só o que é claro
-       no fundo, para o texto branco manter 4.5:1 sobre vídeo branco (conta feita com a opacity de repouso da .bar). */
+       no fundo, (o véu local do .cur e dos botões, --chip, cuida do contraste sobre vídeo branco). */
     :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.05) 55%, rgba(255,255,255,.04));
       --glass-fx: blur(20px) saturate(1.8) brightness(.95); }
     .bar, .ctl, .toast { -webkit-backdrop-filter: var(--glass-fx); backdrop-filter: var(--glass-fx);
@@ -174,7 +177,7 @@
     /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
        Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
     :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.95); }
-    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o repouso mantém o contraste AA do .cur. */
+    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o contraste vem do véu local (--chip-cur no .cur, ~5:1 sobre branco; --chip nos botões, ~3:1). */
     :host { --glass-open: blur(20px) saturate(1.8) brightness(1); }
     :host(.distort) { --glass-open: url(#speedia-glass) blur(20px) saturate(1.8) brightness(1); }
     .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.06); --sheen: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%); }
@@ -295,9 +298,20 @@
   const lensAttrs = { href: lensMap, x: 0, y: 0, width: '100%', height: '100%', preserveAspectRatio: 'none', result: 'map' };
   for (const k in lensAttrs) lensImg.setAttribute(k, lensAttrs[k]);
   const disp = document.createElementNS(SVG_NS, 'feDisplacementMap');
-  const dispAttrs = { in: 'SourceGraphic', in2: 'map', scale: 12, xChannelSelector: 'R', yChannelSelector: 'G' };
+  const dispAttrs = { in: 'SourceGraphic', in2: 'mapped', scale: 12, xChannelSelector: 'R', yChannelSelector: 'G' };
   for (const k in dispAttrs) disp.setAttribute(k, dispAttrs[k]);
-  glassFilter.append(lensImg, disp);
+  // Fallback neutro: se a CSP do site bloquear o data: URL do feImage, o mapa vira 128 liso e o backdrop não se move.
+  const flood = document.createElementNS(SVG_NS, 'feFlood');
+  flood.setAttribute('flood-color', 'rgb(128,128,128)');
+  flood.setAttribute('result', 'neutral');
+  const merge = document.createElementNS(SVG_NS, 'feMerge');
+  merge.setAttribute('result', 'mapped');
+  for (const n of ['neutral', 'map']) {
+    const node = document.createElementNS(SVG_NS, 'feMergeNode');
+    node.setAttribute('in', n);
+    merge.append(node);
+  }
+  glassFilter.append(lensImg, flood, merge, disp);
   glassSvg.append(glassFilter);
   root.append(h('style', { textContent: CSS }), glassSvg, bar, seek, mini, toastEl);
 
