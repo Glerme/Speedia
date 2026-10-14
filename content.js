@@ -99,7 +99,6 @@
       transition-behavior: allow-discrete; }
     .mini { transition: opacity .18s var(--ease), transform .18s var(--ease), display .18s;
       transition-behavior: allow-discrete; }
-    .bar[hidden], .mini[hidden], .seek[hidden] { display: none; opacity: 0; }
     @starting-style { .bar, .mini, .seek { opacity: 0; } }
     button { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
       gap: 6px; cursor: pointer; min-width: 28px; min-height: 28px; padding: 6px 11px; border-radius: 999px;
@@ -124,6 +123,8 @@
     .bar.side .cur { display: none; }
     .bar.side .row { display: flex; flex-direction: column; align-items: stretch; }
     .bar.side button { justify-content: center; }
+    /* Depois de .bar:hover/.bar.side na cascata: força o fade de saída e solta os cliques já no primeiro frame. */
+    :is(.bar, .bar.side, .mini, .seek)[hidden] { display: none; opacity: 0 !important; pointer-events: none !important; }
     .mini { position: fixed; right: 16px; bottom: 16px; border-radius: 14px; overflow: hidden; background: #000;
       box-shadow: var(--shadow), 0 0 0 1px var(--line); cursor: pointer; color: var(--fg);
       font: 600 15px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; }
