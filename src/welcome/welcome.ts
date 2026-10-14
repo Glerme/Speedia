@@ -1,3 +1,7 @@
+// @ts-nocheck
+import { speediaApplyI18n, speediaMsg } from '../shared/i18n';
+import { SPEEDIA_ACTIONS, speediaDefaultShortcuts, speediaPretty } from '../shared/shortcuts';
+
 // Monta a tabela com os atalhos atuais (padrões + o que o usuário personalizou).
 function renderShortcuts(saved) {
   const shortcuts = { ...speediaDefaultShortcuts(), ...saved };

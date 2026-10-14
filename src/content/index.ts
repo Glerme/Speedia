@@ -1,3 +1,7 @@
+// @ts-nocheck
+import { speediaMsg } from '../shared/i18n';
+import { speediaCombo, speediaDefaultShortcuts, speediaPretty } from '../shared/shortcuts';
+
 (() => {
   'use strict';
 

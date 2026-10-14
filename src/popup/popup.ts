@@ -1,3 +1,8 @@
+// @ts-nocheck
+import { SPEEDIA_DEFAULT_ACCENT, speediaApplyLook, speediaCacheLook, speediaCachedLook, speediaOn, speediaValidAccent, speediaValidTheme } from './theme';
+import { speediaApplyI18n, speediaMsg } from '../shared/i18n';
+import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty } from '../shared/shortcuts';
+
 (() => {
   'use strict';
 
