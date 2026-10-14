@@ -78,3 +78,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
   if (changes.shortcuts) renderShortcuts(changes.shortcuts.newValue);
 });
+
+// A edição da loja não tem download de vídeos.
+if (globalThis.SPEEDIA_EDITION === 'store') document.getElementById('feat-download')?.remove();

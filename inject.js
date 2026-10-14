@@ -5,6 +5,8 @@
 (() => {
   'use strict';
 
+  const STORE = globalThis.SPEEDIA_EDITION === 'store';
+
   const pathKey = (u) => {
     try {
       return new URL(u).pathname.replace(/\.\w+$/, '');
@@ -100,7 +102,7 @@
 
   const interesting = (url) => /graphql|\/api\//.test(url || '');
 
-  const origFetch = window.fetch;
+  const origFetch = STORE ? null : window.fetch;
   if (origFetch) {
     window.fetch = function (...args) {
       const p = origFetch.apply(this, args);
@@ -124,17 +126,19 @@
       else if (this.responseType === 'json' && this.response) walk(this.response);
     } catch {}
   }
-  const origOpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function (method, url) {
-    this.__speediaUrl = String(url);
-    this.addEventListener('load', onXhrLoad);
-    return origOpen.apply(this, arguments);
-  };
+  if (!STORE) {
+    const origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      this.__speediaUrl = String(url);
+      this.addEventListener('load', onXhrLoad);
+      return origOpen.apply(this, arguments);
+    };
 
-  // Dados que já vêm embutidos no HTML inicial (Instagram).
-  document.addEventListener('DOMContentLoaded', () => {
-    for (const s of document.querySelectorAll('script[type="application/json"]')) scan(s.textContent);
-  });
+    // Dados que já vêm embutidos no HTML inicial (Instagram).
+    document.addEventListener('DOMContentLoaded', () => {
+      for (const s of document.querySelectorAll('script[type="application/json"]')) scan(s.textContent);
+    });
+  }
 
   // O content script marca o vídeo "preso" enquanto ele está fora da tela; nesse
   // período ignoramos o pause automático que o site dispara ao rolar a página.
