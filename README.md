@@ -78,7 +78,7 @@ You can change or disable any shortcut in the popup (click the Speedia icon in t
 
 ## Appearance
 
-In the popup, choose the theme (Automatic, Light or Dark) and the main color, from 8 presets or a color wheel. The bar over the video and the welcome page follow your choice.
+In the popup, choose the theme (Auto, Light or Dark) and the main color, from 8 presets or a color wheel. The bar over the video and the welcome page follow your choice.
 
 <p align="center">
   <img src="docs/media/appearance.gif" alt="Changing the theme and main color in the Speedia popup" width="320">
