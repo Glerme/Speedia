@@ -91,7 +91,7 @@
   const SEEK_H = 18; // altura da faixa de seek (CSS e posicionamento); não crescer: cobre botões nativos do Instagram
 
   const CSS = `
-    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(0,0,0,.28); --bg-strong: rgba(0,0,0,.28); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
+    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(0,0,0,.1); --bg-strong: rgba(0,0,0,.1); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
       --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.2); --press: rgba(255,255,255,.32);
       --shadow: 0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1); --ease: cubic-bezier(.2,.8,.2,1); }
     /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
@@ -150,10 +150,10 @@
       font: 500 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
       pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
-    /* Liquid glass claro (bar, ctl, toast): véu escuro mínimo + brilho branco suave em degradê. O brightness(.5) escurece só o que é claro
+    /* Liquid glass claro (bar, ctl, toast): véu escuro mínimo + brilho branco suave em degradê. O brightness(.95) escurece só o que é claro
        no fundo, para o texto branco manter 4.5:1 sobre vídeo branco (conta feita com a opacity de repouso da .bar). */
     :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.05) 55%, rgba(255,255,255,.04));
-      --glass-fx: blur(20px) saturate(1.8) brightness(.5); }
+      --glass-fx: blur(20px) saturate(1.8) brightness(.95); }
     .bar, .ctl, .toast { -webkit-backdrop-filter: var(--glass-fx); backdrop-filter: var(--glass-fx);
       box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -10px 16px -12px rgba(255,255,255,.18); }
     .ctl { box-shadow: 0 4px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -6px 10px -8px rgba(255,255,255,.18); }
@@ -162,20 +162,20 @@
       background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.12) 50%, rgba(255,255,255,.28));
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
       mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
-    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.35); }
-    .bar svg, .ctl svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 0 8px rgba(0,0,0,.35); }
+    .bar svg, .ctl svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)) drop-shadow(0 0 6px rgba(0,0,0,.35)); }
     /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
        Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
-    :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.5); }
+    :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.95); }
     /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o repouso mantém o contraste AA do .cur. */
     :host { --glass-open: blur(20px) saturate(1.8) brightness(1); }
     :host(.distort) { --glass-open: url(#speedia-glass) blur(20px) saturate(1.8) brightness(1); }
-    .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.03); --sheen: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%); }
+    .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.06); --sheen: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%); }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
-      :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.5); --glass-open: blur(20px) saturate(1.8) brightness(1); }
+      :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.95); --glass-open: blur(20px) saturate(1.8) brightness(1); }
     }
     @media (prefers-reduced-transparency: reduce) {
       :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
