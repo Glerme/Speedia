@@ -87,14 +87,16 @@
 
   // ---------------------------------------------------------------- interface
 
+  const SEEK_H = 28; // altura da área de clique da barra de seek (CSS e posicionamento)
+
   const CSS = `
     :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.78); --bg-strong: rgba(18,18,22,.94);
       --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.16); --press: rgba(255,255,255,.26);
       --shadow: 0 6px 24px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); --ease: cubic-bezier(.2,.8,.2,1); }
     [hidden] { display: none !important; }
-    .bar, .mini, .toast, .time, .ctl, .seek {
-      transition: opacity .18s var(--ease), transform .18s var(--ease), background-color .15s, padding .15s,
-        display .18s allow-discrete; }
+    .bar, .seek, .time, .ctl { transition: opacity .18s var(--ease), background-color .15s, padding .15s;
+      transition-behavior: allow-discrete; }
+    .mini, .toast { transition: opacity .18s var(--ease), transform .18s var(--ease); transition-behavior: allow-discrete; }
     .bar[hidden], .mini[hidden], .toast[hidden], .seek[hidden] { display: none !important; opacity: 0; }
     @starting-style { .bar, .mini, .toast, .seek { opacity: 0; } }
     button { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
@@ -128,7 +130,7 @@
       background: var(--bg-strong); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; }
     .mini:hover .ctl, .mini:focus-within .ctl { opacity: 1; }
     .prog { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: var(--accent); pointer-events: none; }
-    .seek { position: fixed; top: 0; left: 0; height: 28px; display: flex; align-items: flex-end; cursor: pointer;
+    .seek { position: fixed; top: 0; left: 0; height: ${SEEK_H}px; display: flex; align-items: flex-end; cursor: pointer;
       touch-action: none; }
     .seek:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
     .track { width: 100%; height: 4px; background: rgba(255,255,255,.35); box-shadow: 0 0 6px rgba(0,0,0,.4);
@@ -214,7 +216,7 @@
     h('div', { className: 'row' }, muteBtn, pipBtn, autoBtn, dlBtn)
   );
 
-  const canvas = h('canvas', { title: 'Voltar ao vídeo', role: 'button', ariaLabel: 'Voltar ao vídeo' });
+  const canvas = h('canvas', { title: 'Voltar ao vídeo', role: 'button', tabIndex: 0, ariaLabel: 'Voltar ao vídeo' });
   const ctx = canvas.getContext('2d');
   const miniPlay = h('button', { textContent: '❚❚', title: 'Pausar/continuar', ariaLabel: 'Pausar ou continuar' });
   const miniPip = h('button', { title: 'Abrir em janela PiP', ariaLabel: 'Abrir em janela PiP' }, icon(ICON_PIP));
@@ -282,14 +284,23 @@
     toastTimer = setTimeout(() => (toastEl.hidden = true), 3500);
   }
 
+  let muteKeyText = '';
+  const muteText = () => 'Ativar/desativar o som' + muteKeyText;
+
+  // Botão alternável: classe visual + aria-pressed.
+  function setPressed(btn, on) {
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  }
+
   function renderSettings() {
     curLabel.textContent = settings.speed + '×';
-    speedBtns.forEach((b, i) => b.classList.toggle('on', SPEEDS[i] === settings.speed));
-    autoBtn.classList.toggle('on', settings.autoPip);
+    speedBtns.forEach((b, i) => setPressed(b, SPEEDS[i] === settings.speed));
+    setPressed(autoBtn, settings.autoPip);
     const muteKey = speediaPretty(settings.shortcuts.mute);
-    const muteText = 'Ativar/desativar o som' + (muteKey ? ` (${muteKey})` : '');
-    muteBtn.title = muteText;
-    muteBtn.setAttribute('aria-label', muteText);
+    muteKeyText = muteKey ? ` (${muteKey})` : '';
+    muteBtn.title = 'Ativar/desativar o som' + muteKeyText;
+    muteBtn.setAttribute('aria-label', muteText() + (muteLabel.textContent ? ': ' + muteLabel.textContent.toLowerCase() : ''));
   }
 
   // ---------------------------------------------------------------- velocidade
@@ -451,7 +462,14 @@
     renderSettings();
     if (!settings.autoPip && mode === 'mini') unpin();
   };
-  canvas.onclick = () => pinned?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  const backToVideo = () => pinned?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  canvas.onclick = backToVideo;
+  canvas.onkeydown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      backToVideo();
+    }
+  };
   miniPlay.onclick = () => pinned && (pinned.paused ? pinned.play().catch(() => {}) : pinned.pause());
   miniPip.onclick = () => pinned && togglePip(pinned);
   miniClose.onclick = dismiss;
@@ -511,11 +529,12 @@
         y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
       }
       bar.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-      pipBtn.classList.toggle('on', document.pictureInPictureElement === best);
+      setPressed(pipBtn, document.pictureInPictureElement === best);
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
       mutedIcon.toggleAttribute('hidden', sound);
       muteLabel.textContent = sound ? 'Som' : 'Mudo';
+      muteBtn.setAttribute('aria-label', muteText() + (sound ? ': som' : ': mudo'));
     } else {
       bar.hidden = true;
     }
@@ -524,7 +543,7 @@
     if (isIG && !dragging) {
       if (onScreen && isFinite(best.duration) && best.duration > 0) {
         seekVideo = best;
-        const y = Math.min(bestRect.bottom, innerHeight) - 18;
+        const y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
         seek.style.transform = `translate(${Math.round(bestRect.left)}px, ${Math.round(y)}px)`;
         seek.style.width = Math.round(bestRect.width) + 'px';
         seek.hidden = false;
