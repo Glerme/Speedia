@@ -131,10 +131,10 @@ try {
 
   // ---- popup-dark.png / popup-light.png
   for (const [name, store, scheme] of [['popup-dark', { theme: 'dark' }, 'dark'], ['popup-light', { theme: 'light', accent: '#f97316' }, 'light']]) {
-    const page = await open('/ext/popup.html', { w: 368, h: 700, store, scheme });
+    const page = await open('/ext/popup.html', { w: 340, h: 700, store, scheme });
     await sleep(500);
     const height = await page.evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
-    await page.setViewport({ width: 368, height, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 340, height, deviceScaleFactor: 2 });
     await page.screenshot({ path: join(out, `${name}.png`) });
     await page.browserContext().close();
   }
@@ -170,12 +170,12 @@ try {
 
   // ---- appearance.gif
   {
-    const page = await open('/ext/popup.html', { w: 368, h: 900, scale: 2, store: { theme: 'dark' } });
+    const page = await open('/ext/popup.html', { w: 340, h: 900, scale: 2, store: { theme: 'dark' } });
     await sleep(500);
     const box = await page.evaluate(() => {
       const a = document.getElementById('h-look').getBoundingClientRect();
       const b = document.getElementById('accentReset').getBoundingClientRect();
-      return { x: 0, y: a.top - 14, width: 368, height: b.bottom - a.top + 28 };
+      return { x: 0, y: a.top - 14, width: 340, height: b.bottom - a.top + 28 };
     });
     const pt = (sel) => page.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel);
     const click = async (sel, ms = 400) => { await glide(page, await pt(sel), ms); await page.mouse.down(); await page.mouse.up(); await sleep(450); };

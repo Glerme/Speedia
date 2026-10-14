@@ -5,10 +5,14 @@ Element.prototype.attachShadow = function (init) {
   return (window.__sr = attachShadow.call(this, { ...init, mode: 'open' }));
 };
 
-const xhr = new XMLHttpRequest();
-xhr.open('GET', '/ext/_locales/en/messages.json', false);
-xhr.send();
-const messages = JSON.parse(xhr.responseText);
+const load = (path) => {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', path, false);
+  xhr.send();
+  return JSON.parse(xhr.responseText);
+};
+const messages = load('/ext/_locales/en/messages.json');
+const manifest = load('/ext/manifest.json');
 
 const data = {};
 const listeners = [];
@@ -58,7 +62,7 @@ window.chrome = {
     },
     onChanged: { addListener: (l) => listeners.push(l) },
   },
-  runtime: { getManifest: () => ({ version: '1.4.0' }), sendMessage: async () => ({}) },
+  runtime: { getManifest: () => manifest, sendMessage: async () => ({}) },
 };
 
 // Estado inicial vindo da URL do harness: ?store={"theme":"dark"}
