@@ -23,7 +23,7 @@
   color-scheme: dark;
 }
 /* Acento como texto/contorno sobre o fundo: mistura com o texto para manter contraste. */
-:root { --accent-text: color-mix(in srgb, var(--accent) 55%, var(--text)); }
+:root { --accent-text: color-mix(in srgb, var(--accent) 40%, var(--text)); }
 
 * { box-sizing: border-box; }
 body {
@@ -85,6 +85,7 @@ kbd {
 .btn {
   display: inline-block; padding: 12px 20px; border-radius: 10px;
   background: var(--accent); color: var(--accent-fg);
+  border: 2px solid var(--accent-text);
   font-weight: 600; text-decoration: none;
 }
 .btn:hover { filter: brightness(1.08); }
