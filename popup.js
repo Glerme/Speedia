@@ -192,5 +192,138 @@
     render();
   }).catch(() => render());
 
+  // ---- Aparência: tema + cor principal (chaves 'theme' e 'accent' em storage.sync) ----
+  const SWATCHES = [
+    ['#3b82f6', 'popupColorBlue'], ['#06b6d4', 'popupColorCyan'], ['#22c55e', 'popupColorGreen'], ['#f59e0b', 'popupColorAmber'],
+    ['#f97316', 'popupColorOrange'], ['#f43f5e', 'popupColorRose'], [SPEEDIA_DEFAULT_ACCENT, 'popupColorPurple'], ['#4b5563', 'popupColorGraphite'],
+  ];
+  const ring = document.getElementById('ring');
+  const ringCenter = document.getElementById('ringCenter');
+  const ringDot = document.getElementById('ringDot');
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const RING = { size: 112, outer: 56, inner: 38 };
+  let look = { theme: speediaValidTheme(speediaCachedLook().theme), accent: speediaValidAccent(speediaCachedLook().accent) };
+  let hue = 0;
+  let dragging = false;
+  let pending = {};
+  let saveTimer = 0;
+
+  function hslToHex(h, s = 75, l = 55) {
+    s /= 100; l /= 100;
+    const k = (n) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+    return '#' + [f(0), f(8), f(4)].map((x) => x.toString(16).padStart(2, '0')).join('');
+  }
+
+  function hexToHue(hex) {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+    if (!d) return hue; // cinza não tem matiz: mantém o anterior
+    const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return Math.round((h * 60 + 360) % 360);
+  }
+
+  function applyLook() {
+    speediaApplyLook(look);
+    speediaCacheLook(look);
+    const { accent } = look;
+    ringCenter.textContent = accent;
+    for (const i of document.querySelectorAll('input[name=theme]')) i.checked = i.value === look.theme;
+    for (const i of document.querySelectorAll('input[name=accent]')) i.checked = i.value === accent;
+    if (hslToHex(hue) !== accent) hue = hexToHue(accent); // evita o arredondamento do hex travar as setas
+    ring.setAttribute('aria-valuenow', hue);
+    ring.setAttribute('aria-valuetext', accent);
+    const a = ((hue - 90) * Math.PI) / 180, r = (RING.outer + RING.inner) / 2;
+    ringDot.style.left = RING.size / 2 + r * Math.cos(a) + 'px';
+    ringDot.style.top = RING.size / 2 + r * Math.sin(a) + 'px';
+  }
+
+  // Grava com debounce: arrastar o anel dispara muitas mudanças.
+  function saveLook(key) {
+    pending[key] = look[key];
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const out = pending;
+      pending = {};
+      chrome.storage.sync.set(out).catch(() => {});
+    }, 200);
+  }
+
+  function setAccent(v) {
+    look.accent = speediaValidAccent(v);
+    applyLook();
+    saveLook('accent');
+  }
+
+  function drawRing() {
+    const dpr = window.devicePixelRatio || 1;
+    ring.width = ring.height = RING.size * dpr;
+    const ctx = ring.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const c = RING.size / 2;
+    const g = ctx.createConicGradient(-Math.PI / 2, c, c);
+    for (let i = 0; i <= 36; i++) g.addColorStop(i / 36, hslToHex(i * 10));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(c, c, RING.outer, 0, Math.PI * 2);
+    ctx.arc(c, c, RING.inner, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+  }
+
+  function pickHue(e) {
+    const r = ring.getBoundingClientRect();
+    const a = Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2);
+    setAccent(hslToHex(Math.round(((a * 180) / Math.PI + 450) % 360)));
+  }
+  ring.onpointerdown = (e) => {
+    dragging = true;
+    ring.setPointerCapture(e.pointerId);
+    pickHue(e);
+  };
+  ring.onpointermove = (e) => dragging && pickHue(e);
+  ring.onpointerup = ring.onpointercancel = () => (dragging = false);
+  ring.onkeydown = (e) => {
+    const step = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 10, PageDown: -10 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    setAccent(hslToHex((hue + step * (e.shiftKey ? 10 : 1) + 360) % 360));
+  };
+
+  const swatches = document.getElementById('swatches');
+  swatches.append(
+    ...SWATCHES.map(([hex, key]) => {
+      const input = h('input', { type: 'radio', name: 'accent', value: hex, onchange: () => setAccent(hex) });
+      input.setAttribute('aria-label', speediaMsg(key));
+      const dot = h('span');
+      dot.style.background = hex;
+      dot.style.color = speediaOn(hex);
+      return h('label', { className: 'sw', title: speediaMsg(key) }, input, dot);
+    })
+  );
+  for (const i of document.querySelectorAll('input[name=theme]')) {
+    i.onchange = () => {
+      look.theme = speediaValidTheme(i.value);
+      applyLook();
+      saveLook('theme');
+    };
+  }
+  document.getElementById('accentReset').onclick = () => setAccent(SPEEDIA_DEFAULT_ACCENT);
+  dark.onchange = applyLook;
+  drawRing();
+  applyLook();
+
+  chrome.storage.onChanged.addListener((ch, area) => {
+    if (area !== 'sync' || !(ch.theme || ch.accent)) return;
+    // Ignora o eco das nossas próprias gravações enquanto há mudança local pendente.
+    if (ch.theme && !('theme' in pending)) look.theme = speediaValidTheme(ch.theme.newValue);
+    if (ch.accent && !('accent' in pending) && !dragging) look.accent = speediaValidAccent(ch.accent.newValue);
+    applyLook();
+  });
+  chrome.storage.sync.get({ theme: 'auto', accent: SPEEDIA_DEFAULT_ACCENT }).then((s) => {
+    look = { theme: speediaValidTheme(s.theme), accent: speediaValidAccent(s.accent) };
+    applyLook();
+  }).catch(() => {});
+
   render();
 })();

@@ -318,5 +318,69 @@
   "errOriginNotAllowed": {
     "message": "origin not allowed",
     "description": "Erro do download (service worker): host fora da lista permitida."
+  },
+  "popupAppearanceHeading": {
+    "message": "Appearance",
+    "description": "Título da seção de aparência no popup."
+  },
+  "popupThemeAuto": {
+    "message": "Auto",
+    "description": "Opção de tema: segue o sistema."
+  },
+  "popupThemeLight": {
+    "message": "Light",
+    "description": "Opção de tema claro."
+  },
+  "popupThemeDark": {
+    "message": "Dark",
+    "description": "Opção de tema escuro."
+  },
+  "popupAccentLabel": {
+    "message": "Accent color",
+    "description": "Rótulo visível e acessível do grupo de cor principal."
+  },
+  "popupAccentRingLabel": {
+    "message": "Accent hue (arrow keys adjust)",
+    "description": "Rótulo acessível do anel de matiz."
+  },
+  "popupAccentReset": {
+    "message": "Restore default color",
+    "description": "Botão que volta a cor principal ao roxo padrão."
+  },
+  "popupColorBlue": {
+    "message": "Blue",
+    "description": "Nome da cor pronta azul."
+  },
+  "popupColorCyan": {
+    "message": "Cyan",
+    "description": "Nome da cor pronta ciano."
+  },
+  "popupColorGreen": {
+    "message": "Green",
+    "description": "Nome da cor pronta verde."
+  },
+  "popupColorAmber": {
+    "message": "Amber",
+    "description": "Nome da cor pronta âmbar."
+  },
+  "popupColorOrange": {
+    "message": "Orange",
+    "description": "Nome da cor pronta laranja."
+  },
+  "popupColorRose": {
+    "message": "Rose",
+    "description": "Nome da cor pronta rosa/vermelho."
+  },
+  "popupColorPurple": {
+    "message": "Purple (default)",
+    "description": "Nome da cor pronta roxo, a cor padrão."
+  },
+  "popupColorGraphite": {
+    "message": "Graphite",
+    "description": "Nome da cor pronta cinza grafite."
+  },
+  "popupThemeLabel": {
+    "message": "Theme",
+    "description": "Rótulo visível do grupo de tema (Automático/Claro/Escuro)."
   }
 }

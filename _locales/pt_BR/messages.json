@@ -318,5 +318,69 @@
   "errOriginNotAllowed": {
     "message": "origem não permitida",
     "description": "Erro do download (service worker): host fora da lista permitida."
+  },
+  "popupAppearanceHeading": {
+    "message": "Aparência",
+    "description": "Título da seção de aparência no popup."
+  },
+  "popupThemeAuto": {
+    "message": "Automático",
+    "description": "Opção de tema: segue o sistema."
+  },
+  "popupThemeLight": {
+    "message": "Claro",
+    "description": "Opção de tema claro."
+  },
+  "popupThemeDark": {
+    "message": "Escuro",
+    "description": "Opção de tema escuro."
+  },
+  "popupAccentLabel": {
+    "message": "Cor principal",
+    "description": "Rótulo visível e acessível do grupo de cor principal."
+  },
+  "popupAccentRingLabel": {
+    "message": "Matiz da cor principal (setas ajustam)",
+    "description": "Rótulo acessível do anel de matiz."
+  },
+  "popupAccentReset": {
+    "message": "Restaurar cor padrão",
+    "description": "Botão que volta a cor principal ao roxo padrão."
+  },
+  "popupColorBlue": {
+    "message": "Azul",
+    "description": "Nome da cor pronta azul."
+  },
+  "popupColorCyan": {
+    "message": "Ciano",
+    "description": "Nome da cor pronta ciano."
+  },
+  "popupColorGreen": {
+    "message": "Verde",
+    "description": "Nome da cor pronta verde."
+  },
+  "popupColorAmber": {
+    "message": "Âmbar",
+    "description": "Nome da cor pronta âmbar."
+  },
+  "popupColorOrange": {
+    "message": "Laranja",
+    "description": "Nome da cor pronta laranja."
+  },
+  "popupColorRose": {
+    "message": "Rosa",
+    "description": "Nome da cor pronta rosa/vermelho."
+  },
+  "popupColorPurple": {
+    "message": "Roxo (padrão)",
+    "description": "Nome da cor pronta roxo, a cor padrão."
+  },
+  "popupColorGraphite": {
+    "message": "Grafite",
+    "description": "Nome da cor pronta cinza grafite."
+  },
+  "popupThemeLabel": {
+    "message": "Tema",
+    "description": "Rótulo visível do grupo de tema (Automático/Claro/Escuro)."
   }
 }

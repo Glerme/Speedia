@@ -1,0 +1,69 @@
+// Tema e cor principal do popup. Carregado no <head> (sem inline) para pintar o primeiro frame já certo;
+// o último valor fica espelhado em localStorage porque chrome.storage responde de forma assíncrona.
+var SPEEDIA_DEFAULT_ACCENT = '#bf22ed';
+var SPEEDIA_LOOK_CACHE = 'speediaLook';
+
+function speediaValidAccent(v) {
+  return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : SPEEDIA_DEFAULT_ACCENT;
+}
+function speediaValidTheme(v) {
+  return v === 'light' || v === 'dark' ? v : 'auto';
+}
+
+function speediaLum(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function speediaContrast(a, b) {
+  const [hi, lo] = [speediaLum(a), speediaLum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+// Texto sobre a cor de destaque: o de maior contraste WCAG.
+function speediaOn(hex) {
+  return speediaContrast(hex, '#ffffff') >= speediaContrast(hex, '#111111') ? '#fff' : '#111';
+}
+function speediaMix(a, b, t) {
+  return '#' + [1, 3, 5].map((i) => {
+    const x = parseInt(a.slice(i, i + 2), 16), y = parseInt(b.slice(i, i + 2), 16);
+    return Math.round(x + (y - x) * t).toString(16).padStart(2, '0');
+  }).join('');
+}
+
+function speediaApplyLook(look) {
+  const root = document.documentElement;
+  const theme = speediaValidTheme(look.theme);
+  const accent = speediaValidAccent(look.accent);
+  root.dataset.theme = theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+  const css = getComputedStyle(root);
+  const [card, control, text] = ['--card', '--control', '--text'].map((v) => css.getPropertyValue(v).trim());
+  // --accent-ui: destaque usado como único indicador (switch, segmento); escurece/clareia até 3:1 contra o fundo.
+  let ui = accent;
+  for (let t = 0.05; t <= 1 && Math.min(speediaContrast(ui, card), speediaContrast(ui, control)) < 3; t += 0.05) {
+    ui = speediaMix(accent, text, t);
+  }
+  const set = (k, v) => root.style.setProperty(k, v);
+  set('--accent', accent);
+  set('--accent-text', speediaOn(accent));
+  set('--accent-ui', ui);
+  set('--accent-ui-text', speediaOn(ui));
+  set('--focus', speediaContrast(accent, card) >= 3 ? accent : text);
+}
+
+function speediaCacheLook(look) {
+  try {
+    localStorage.setItem(SPEEDIA_LOOK_CACHE, JSON.stringify(look));
+  } catch {}
+}
+
+function speediaCachedLook() {
+  try {
+    return JSON.parse(localStorage.getItem(SPEEDIA_LOOK_CACHE)) || {};
+  } catch {
+    return {};
+  }
+}
+
+speediaApplyLook(speediaCachedLook());
