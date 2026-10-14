@@ -1,38 +1,39 @@
+// @ts-nocheck
 // Tema e cor principal do popup. Carregado no <head> (sem inline) para pintar o primeiro frame já certo;
 // o último valor fica espelhado em localStorage porque chrome.storage responde de forma assíncrona.
-var SPEEDIA_DEFAULT_ACCENT = '#bf22ed';
-var SPEEDIA_LOOK_CACHE = 'speediaLook';
+export const SPEEDIA_DEFAULT_ACCENT = '#bf22ed';
+export const SPEEDIA_LOOK_CACHE = 'speediaLook';
 
-function speediaValidAccent(v) {
+export function speediaValidAccent(v) {
   return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : SPEEDIA_DEFAULT_ACCENT;
 }
-function speediaValidTheme(v) {
+export function speediaValidTheme(v) {
   return v === 'light' || v === 'dark' ? v : 'auto';
 }
 
-function speediaLum(hex) {
+export function speediaLum(hex) {
   const [r, g, b] = [1, 3, 5].map((i) => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-function speediaContrast(a, b) {
+export function speediaContrast(a, b) {
   const [hi, lo] = [speediaLum(a), speediaLum(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
 // Texto sobre a cor de destaque: o de maior contraste WCAG.
-function speediaOn(hex) {
+export function speediaOn(hex) {
   return speediaContrast(hex, '#ffffff') >= speediaContrast(hex, '#111111') ? '#fff' : '#111';
 }
-function speediaMix(a, b, t) {
+export function speediaMix(a, b, t) {
   return '#' + [1, 3, 5].map((i) => {
     const x = parseInt(a.slice(i, i + 2), 16), y = parseInt(b.slice(i, i + 2), 16);
     return Math.round(x + (y - x) * t).toString(16).padStart(2, '0');
   }).join('');
 }
 
-function speediaApplyLook(look) {
+export function speediaApplyLook(look) {
   const root = document.documentElement;
   const theme = speediaValidTheme(look.theme);
   const accent = speediaValidAccent(look.accent);
@@ -52,18 +53,16 @@ function speediaApplyLook(look) {
   set('--focus', speediaContrast(accent, card) >= 3 ? accent : text);
 }
 
-function speediaCacheLook(look) {
+export function speediaCacheLook(look) {
   try {
     localStorage.setItem(SPEEDIA_LOOK_CACHE, JSON.stringify(look));
   } catch {}
 }
 
-function speediaCachedLook() {
+export function speediaCachedLook() {
   try {
     return JSON.parse(localStorage.getItem(SPEEDIA_LOOK_CACHE)) || {};
   } catch {
     return {};
   }
 }
-
-speediaApplyLook(speediaCachedLook());

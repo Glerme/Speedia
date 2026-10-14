@@ -2,10 +2,10 @@
 const ALLOWED_HOSTS = /(^|\.)(cdninstagram\.com|fbcdn\.net|twimg\.com)$/;
 
 // A edição da loja não tem download de vídeos (edition.js ausente = completa).
-if (chrome.downloads && globalThis.SPEEDIA_EDITION !== 'store') chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+if (chrome.downloads && globalThis.SPEEDIA_EDITION !== 'store') chrome.runtime.onMessage.addListener((msg: { type?: string; url: string; filename?: unknown }, _sender, sendResponse) => {
   if (msg?.type !== 'download') return;
 
-  let url;
+  let url: URL;
   try {
     url = new URL(msg.url);
   } catch {

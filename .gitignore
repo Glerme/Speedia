@@ -1,2 +1,5 @@
 scripts/media/node_modules
 scripts/media/.cache
+
+node_modules/
+dist/
