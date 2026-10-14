@@ -39,11 +39,14 @@ jobs:
 
       - name: Montar o zip
         run: |
-          mkdir -p dist/speedia
-          cp -r manifest.json background.js content.js inject.js shortcuts.js popup.html popup.js popup-theme.js welcome.html welcome.css welcome.js icons _locales dist/speedia/
+          scripts/build.sh full dist
+          scripts/build.sh store dist
           cd dist && zip -r "speedia-$TAG.zip" speedia
           # O Firefox espera o manifest na raiz do arquivo.
-          cd speedia && zip -r "../speedia-firefox-$TAG.zip" .
+          (cd speedia && zip -r "../speedia-firefox-$TAG.zip" .)
+          # Edições das lojas (sem download de vídeos).
+          (cd speedia-store && zip -r "../speedia-store-chrome-$TAG.zip" .)
+          (cd speedia-store-firefox && zip -r "../speedia-store-firefox-$TAG.zip" .)
 
       # Só roda se os secrets da Mozilla existirem; gera um .xpi de instalação permanente.
       - name: Assinar para o Firefox

@@ -7,6 +7,10 @@
     "message": "Video speed control, scroll-triggered mini player/PiP and video downloads on Instagram and X/Twitter.",
     "description": "Descrição da extensão nas lojas (máx. 132 caracteres)."
   },
+  "extDescriptionStore": {
+    "message": "Video speed control and scroll-triggered mini player/PiP on Instagram and X/Twitter.",
+    "description": "Descrição da extensão nas lojas, sem menção a download (máx. 132 caracteres)."
+  },
   "actionTitle": {
     "message": "Speedia",
     "description": "Tooltip do ícone da extensão na barra do navegador."

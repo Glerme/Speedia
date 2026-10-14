@@ -47,6 +47,13 @@ Funciona no Instagram e no X/Twitter. Requer Chrome 121+ ou Firefox 128+.
 
 Abra o `.xpi` assinado da [última release](https://github.com/Glerme/Speedia/releases/latest) no Firefox e confirme a instalação. Ele se atualiza sozinho a cada nova release.
 
+### Edições
+
+- **Completa** (releases do GitHub): inclui o download de vídeos.
+- **Lojas** (Chrome Web Store / AMO): a mesma extensão sem download de vídeos e sem a permissão `downloads`.
+
+Gere qualquer uma com `scripts/build.sh <full|store> <outdir>` (ex.: `scripts/build.sh store dist` → `dist/speedia-store` e `dist/speedia-store-firefox`).
+
 ## Uso
 
 Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com as velocidades (0.5x a 3x) e os botões de som, PiP, Auto PiP e download.

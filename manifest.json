@@ -30,6 +30,7 @@
   "background": {
     "service_worker": "background.js",
     "scripts": [
+      "edition.js",
       "background.js"
     ]
   },
@@ -41,6 +42,7 @@
         "*://*.twitter.com/*"
       ],
       "js": [
+        "edition.js",
         "inject.js"
       ],
       "run_at": "document_start",
@@ -53,6 +55,7 @@
         "*://*.twitter.com/*"
       ],
       "js": [
+        "edition.js",
         "shortcuts.js",
         "content.js"
       ],
