@@ -2,6 +2,7 @@
   'use strict';
 
   const t = speediaMsg;
+  const STORE = globalThis.SPEEDIA_EDITION === 'store';
   const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   const isIG = location.hostname.endsWith('instagram.com');
   const settings = { speed: 1, autoPip: true, shortcuts: speediaDefaultShortcuts() };
@@ -11,7 +12,7 @@
   // ---------------------------------------------------------------- mídia capturada (inject.js)
 
   const entries = new Map();
-  window.addEventListener('speedia:media', (e) => {
+  if (!STORE) window.addEventListener('speedia:media', (e) => {
     let list;
     try {
       list = JSON.parse(e.detail);
@@ -250,13 +251,13 @@
     title: t('ovAutoPipTitle'),
     ariaLabel: t('ovAutoPipAria'),
   });
-  const dlBtn = h('button', { title: t('ovDownloadTitle'), ariaLabel: t('ovDownloadTitle') }, icon(ICON_DOWNLOAD), t('ovDownloadLabel'));
+  const dlBtn = STORE ? null : h('button', { title: t('ovDownloadTitle'), ariaLabel: t('ovDownloadTitle') }, icon(ICON_DOWNLOAD), t('ovDownloadLabel'));
   const bar = h(
     'div',
     { className: 'bar', hidden: true },
     curLabel,
     h('div', { className: 'row' }, ...speedBtns),
-    h('div', { className: 'row' }, muteBtn, pipBtn, autoBtn, dlBtn)
+    h('div', { className: 'row' }, ...[muteBtn, pipBtn, autoBtn, dlBtn].filter(Boolean))
   );
 
   const canvas = h('canvas', { title: t('ovBackToVideo'), role: 'button', tabIndex: 0, ariaLabel: t('ovBackToVideo') });
@@ -535,7 +536,7 @@
   }
 
   muteBtn.onclick = () => active && toggleMute(active);
-  dlBtn.onclick = () => active && download(active);
+  if (dlBtn) dlBtn.onclick = () => active && download(active);
   autoBtn.onclick = () => {
     settings.autoPip = !settings.autoPip;
     chrome.storage.sync.set({ autoPip: settings.autoPip }).catch(() => {});

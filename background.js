@@ -1,7 +1,8 @@
 // Só baixa de CDNs conhecidas: a URL vem da página, então não confiamos nela cegamente.
 const ALLOWED_HOSTS = /(^|\.)(cdninstagram\.com|fbcdn\.net|twimg\.com)$/;
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+// A edição da loja não tem download de vídeos (edition.js ausente = completa).
+if (chrome.downloads && globalThis.SPEEDIA_EDITION !== 'store') chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.type !== 'download') return;
 
   let url;
