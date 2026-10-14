@@ -3,6 +3,12 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.4.2 — 2026-10-14
+
+- Código reorganizado em TypeScript dentro de `src/`, com build (esbuild) gerando a extensão em
+  `dist/`. Sem mudanças de comportamento.
+- Para rodar localmente: `npm ci`, `npm run build` e carregar a pasta `dist/`.
+
 ## 1.4.1 — 2026-10-14
 
 - Nova edição para as lojas (Chrome Web Store e Firefox Add-ons), sem download de vídeos. A
