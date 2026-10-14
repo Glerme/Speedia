@@ -3,3 +3,4 @@ scripts/media/.cache
 
 node_modules/
 dist/
+package/
