@@ -40,7 +40,7 @@ jobs:
       - name: Montar o zip
         run: |
           mkdir -p dist/speedia
-          cp -r manifest.json background.js content.js inject.js shortcuts.js popup.html popup.js icons dist/speedia/
+          cp -r manifest.json background.js content.js inject.js shortcuts.js popup.html popup.js welcome.html welcome.css welcome.js icons _locales dist/speedia/
           cd dist && zip -r "speedia-$TAG.zip" speedia
           # O Firefox espera o manifest na raiz do arquivo.
           cd speedia && zip -r "../speedia-firefox-$TAG.zip" .
