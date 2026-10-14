@@ -193,36 +193,20 @@
   }).catch(() => render());
 
   // ---- Aparência: tema + cor principal (chaves 'theme' e 'accent' em storage.sync) ----
-  const DEFAULT_ACCENT = '#bf22ed';
   const SWATCHES = [
     ['#3b82f6', 'popupColorBlue'], ['#06b6d4', 'popupColorCyan'], ['#22c55e', 'popupColorGreen'], ['#f59e0b', 'popupColorAmber'],
-    ['#f97316', 'popupColorOrange'], ['#f43f5e', 'popupColorRose'], [DEFAULT_ACCENT, 'popupColorPurple'], ['#4b5563', 'popupColorGraphite'],
+    ['#f97316', 'popupColorOrange'], ['#f43f5e', 'popupColorRose'], [SPEEDIA_DEFAULT_ACCENT, 'popupColorPurple'], ['#4b5563', 'popupColorGraphite'],
   ];
-  const root = document.documentElement;
   const ring = document.getElementById('ring');
+  const ringCenter = document.getElementById('ringCenter');
   const ringDot = document.getElementById('ringDot');
   const dark = matchMedia('(prefers-color-scheme: dark)');
   const RING = { size: 112, outer: 56, inner: 38 };
-  let look = { theme: 'auto', accent: DEFAULT_ACCENT };
+  let look = { theme: speediaValidTheme(speediaCachedLook().theme), accent: speediaValidAccent(speediaCachedLook().accent) };
   let hue = 0;
   let dragging = false;
   let pending = {};
   let saveTimer = 0;
-
-  const validAccent = (v) => (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : DEFAULT_ACCENT);
-  const validTheme = (v) => (['light', 'dark'].includes(v) ? v : 'auto');
-
-  function lum(hex) {
-    const [r, g, b] = [1, 3, 5].map((i) => {
-      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
-      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-  const contrast = (a, b) => {
-    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  };
 
   function hslToHex(h, s = 75, l = 55) {
     s /= 100; l /= 100;
@@ -241,14 +225,10 @@
   }
 
   function applyLook() {
-    const t = look.theme === 'auto' ? (dark.matches ? 'dark' : 'light') : look.theme;
-    root.dataset.theme = t;
+    speediaApplyLook(look);
+    speediaCacheLook(look);
     const { accent } = look;
-    const card = getComputedStyle(root).getPropertyValue('--card').trim();
-    const text = getComputedStyle(root).getPropertyValue('--text').trim();
-    root.style.setProperty('--accent', accent);
-    root.style.setProperty('--accent-text', contrast(accent, '#ffffff') >= contrast(accent, '#111111') ? '#fff' : '#111');
-    root.style.setProperty('--focus', contrast(accent, card) >= 3 ? accent : text);
+    ringCenter.textContent = accent;
     for (const i of document.querySelectorAll('input[name=theme]')) i.checked = i.value === look.theme;
     for (const i of document.querySelectorAll('input[name=accent]')) i.checked = i.value === accent;
     if (hslToHex(hue) !== accent) hue = hexToHue(accent); // evita o arredondamento do hex travar as setas
@@ -271,7 +251,7 @@
   }
 
   function setAccent(v) {
-    look.accent = validAccent(v);
+    look.accent = speediaValidAccent(v);
     applyLook();
     saveLook('accent');
   }
@@ -317,17 +297,18 @@
       input.setAttribute('aria-label', speediaMsg(key));
       const dot = h('span');
       dot.style.background = hex;
+      dot.style.color = speediaOn(hex);
       return h('label', { className: 'sw', title: speediaMsg(key) }, input, dot);
     })
   );
   for (const i of document.querySelectorAll('input[name=theme]')) {
     i.onchange = () => {
-      look.theme = validTheme(i.value);
+      look.theme = speediaValidTheme(i.value);
       applyLook();
       saveLook('theme');
     };
   }
-  document.getElementById('accentReset').onclick = () => setAccent(DEFAULT_ACCENT);
+  document.getElementById('accentReset').onclick = () => setAccent(SPEEDIA_DEFAULT_ACCENT);
   dark.onchange = applyLook;
   drawRing();
   applyLook();
@@ -335,12 +316,12 @@
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area !== 'sync' || !(ch.theme || ch.accent)) return;
     // Ignora o eco das nossas próprias gravações enquanto há mudança local pendente.
-    if (ch.theme && !('theme' in pending)) look.theme = validTheme(ch.theme.newValue);
-    if (ch.accent && !('accent' in pending) && !dragging) look.accent = validAccent(ch.accent.newValue);
+    if (ch.theme && !('theme' in pending)) look.theme = speediaValidTheme(ch.theme.newValue);
+    if (ch.accent && !('accent' in pending) && !dragging) look.accent = speediaValidAccent(ch.accent.newValue);
     applyLook();
   });
-  chrome.storage.sync.get({ theme: 'auto', accent: DEFAULT_ACCENT }).then((s) => {
-    look = { theme: validTheme(s.theme), accent: validAccent(s.accent) };
+  chrome.storage.sync.get({ theme: 'auto', accent: SPEEDIA_DEFAULT_ACCENT }).then((s) => {
+    look = { theme: speediaValidTheme(s.theme), accent: speediaValidAccent(s.accent) };
     applyLook();
   }).catch(() => {});
 

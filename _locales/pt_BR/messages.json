@@ -337,7 +337,7 @@
   },
   "popupAccentLabel": {
     "message": "Cor principal",
-    "description": "Rótulo acessível do grupo de cores prontas."
+    "description": "Rótulo visível e acessível do grupo de cor principal."
   },
   "popupAccentRingLabel": {
     "message": "Matiz da cor principal (setas ajustam)",
@@ -378,5 +378,9 @@
   "popupColorGraphite": {
     "message": "Grafite",
     "description": "Nome da cor pronta cinza grafite."
+  },
+  "popupThemeLabel": {
+    "message": "Tema",
+    "description": "Rótulo visível do grupo de tema (Automático/Claro/Escuro)."
   }
 }
