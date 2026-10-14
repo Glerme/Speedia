@@ -2,46 +2,137 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Speedia</title>
     <style>
-      :root { color-scheme: dark; }
-      body { margin: 0; width: 320px; padding: 14px; background: #161616; color: #fff;
+      /* Tokens: destaque extraído do ícone (violeta #bf22ed), ajustado para contraste AA em cada tema. */
+      :root {
+        color-scheme: light dark;
+        --bg: #f4f2f8;
+        --card: #ffffff;
+        --border: #e2dfe9;
+        --text: #1b1724;
+        --muted: #5f5a6e; /* 6.3:1 sobre --card */
+        --accent: #9c1cc4; /* 6.4:1 com texto branco */
+        --accent-text: #ffffff;
+        --accent-soft: #f3e3fa;
+        --control: #eeebf4;
+        --control-hover: #e3dfec;
+        --track-off: #6f6a80; /* 5:1 sobre --card (contraste de componente) */
+        --warn-bg: #fff4d6;
+        --warn-text: #5c4300;
+        --focus: #7a12a0;
+        --shadow: 0 1px 2px rgba(27, 23, 36, 0.06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121017;
+          --card: #1c1925;
+          --border: #302c3d;
+          --text: #f2eff8;
+          --muted: #aaa4bc; /* 7:1 sobre --card */
+          --accent: #cf5df2; /* 5.8:1 sobre --card */
+          --accent-text: #15091b;
+          --accent-soft: #2e1a38;
+          --control: #2a2636;
+          --control-hover: #373248;
+          --track-off: #8d869f;
+          --warn-bg: #3a2f10;
+          --warn-text: #ffe7a3;
+          --focus: #e29bf7;
+          --shadow: none;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; width: 340px; padding: 14px; background: var(--bg); color: var(--text);
         font: 500 13px/1.4 system-ui, sans-serif; }
-      h1 { margin: 0 0 12px; font-size: 15px; }
-      h2 { margin: 16px 0 6px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-        color: rgba(255,255,255,.55); }
-      .item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.1); }
+
+      header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+      header img { width: 36px; height: 36px; border-radius: 9px; display: block; }
+      h1 { margin: 0; font-size: 16px; line-height: 1.2; }
+      .version { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+      section { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+        box-shadow: var(--shadow); padding: 4px 12px 6px; margin-bottom: 10px; }
+      h2 { margin: 10px 0 2px; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+        color: var(--muted); }
+
+      .item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--border); }
+      h2 + .item, #shortcuts .item:first-child { border-top: 0; }
+      #shortcuts { margin-top: 0; }
       .text { flex: 1; min-width: 0; }
-      .hint { font-size: 12px; font-weight: 400; color: rgba(255,255,255,.55); }
-      button { font: inherit; color: inherit; cursor: pointer; border: 0; border-radius: 8px;
-        background: rgba(255,255,255,.12); padding: 7px 10px; }
-      button:hover { background: rgba(255,255,255,.22); }
-      button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-      .key { min-width: 84px; font-weight: 600; text-align: center; }
-      .key.empty { font-weight: 400; color: rgba(255,255,255,.55); }
-      .key.rec { background: #fff; color: #111; }
-      .clear { padding: 7px 9px; }
-      input[type='checkbox'] { width: 18px; height: 18px; margin: 0; accent-color: #fff; cursor: pointer; }
+      .hint { font-size: 12px; font-weight: 400; color: var(--muted); }
+      .item.flash { animation: flash 1.4s ease-out; }
+      @keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+
+      button { font: inherit; color: inherit; cursor: pointer; border: 1px solid transparent; border-radius: 8px;
+        background: var(--control); padding: 6px 10px; }
+      button:hover { background: var(--control-hover); }
+      button:focus-visible, .switch input:focus-visible + .track { outline: 2px solid var(--focus); outline-offset: 2px; }
+      .key { min-width: 92px; font-weight: 600; text-align: center; }
+      .key.empty { font-weight: 400; color: var(--muted); }
+      .key.rec { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+      .clear { padding: 6px 9px; color: var(--muted); }
+      .clear:hover { color: var(--text); }
+
+      /* Toggle switch acessível: checkbox nativo com role=switch por baixo do visual. */
       label.item { cursor: pointer; }
-      .foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+      .switch { position: relative; flex: none; width: 40px; height: 24px; }
+      .switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+      .track { position: absolute; inset: 0; border-radius: 12px; background: var(--track-off); transition: background .15s; pointer-events: none; }
+      .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+        background: #fff; transition: transform .15s; }
+      .switch input:checked + .track { background: var(--accent); }
+      .switch input:checked + .track::after { transform: translateX(16px); background: var(--accent-text); }
+      @media (prefers-reduced-motion: reduce) { .track, .track::after { transition: none; } .item.flash { animation: none; } }
+
+      footer { display: flex; flex-direction: column; gap: 8px; }
+      #reset { align-self: flex-end; }
+      #bar { display: flex; align-items: center; gap: 8px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+      #bar.on { padding: 7px 10px; background: var(--warn-bg); color: var(--warn-text); }
+      #statusText { flex: 1; }
+      #undo { padding: 3px 8px; background: transparent; border-color: currentColor; color: inherit; font-weight: 600; }
+      #undo[hidden] { display: none; }
+      button:disabled { opacity: .4; cursor: default; }
+      button:disabled:hover { background: var(--control); }
     </style>
   </head>
   <body>
-    <h1>Speedia</h1>
+    <header>
+      <img src="icons/icon48.png" alt="" />
+      <div>
+        <h1>Speedia</h1>
+        <div class="version" id="version"></div>
+      </div>
+    </header>
 
-    <h2>Atalhos de teclado</h2>
-    <div id="shortcuts"></div>
+    <section aria-labelledby="h-shortcuts">
+      <h2 id="h-shortcuts">Atalhos de teclado</h2>
+      <div id="shortcuts"></div>
+    </section>
 
-    <h2>Mini player</h2>
-    <label class="item">
-      <span class="text">
-        Auto PiP
-        <div class="hint">Mini player automático ao rolar a página com o vídeo com som</div>
-      </span>
-      <input type="checkbox" id="autoPip" />
-    </label>
+    <section aria-labelledby="h-pip">
+      <h2 id="h-pip">Mini player</h2>
+      <label class="item">
+        <span class="text">
+          Auto PiP
+          <span class="hint" style="display: block">Mini player automático ao rolar a página com o vídeo com som</span>
+        </span>
+        <span class="switch">
+          <input type="checkbox" role="switch" id="autoPip" />
+          <span class="track"></span>
+        </span>
+      </label>
+    </section>
 
-    <div class="foot"><button id="reset">Restaurar atalhos padrão</button></div>
+    <footer>
+      <div id="bar">
+        <span id="statusText" role="status" aria-live="polite"></span>
+        <button id="undo" type="button" hidden>Desfazer</button>
+      </div>
+      <button id="reset" type="button">Restaurar atalhos padrão</button>
+    </footer>
 
     <script src="shortcuts.js"></script>
     <script src="popup.js"></script>
