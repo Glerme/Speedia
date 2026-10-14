@@ -1,5 +1,5 @@
 // Gera os prints e GIFs de docs/media a partir do código real da extensão.
-// Uso: npm ci && node build.mjs   (CHROME_PATH aponta para outro Chrome, se preciso)
+// Uso: (na raiz) npm ci && npm run build; depois node build.mjs   (CHROME_PATH aponta para outro Chrome, se preciso)
 import { createServer } from 'node:http';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -10,11 +10,16 @@ import puppeteer from 'puppeteer-core';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const root = join(here, '../..');
 const out = join(root, 'docs/media');
+const dist = join(root, 'dist');
 const cache = join(here, '.cache');
 const chrome = process.env.CHROME_PATH || '/usr/bin/google-chrome-stable';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.mp4': 'video/mp4' };
 
+if (!existsSync(join(dist, 'content.js'))) {
+  console.error('dist/ não existe: rode `npm run build` na raiz antes.');
+  process.exit(1);
+}
 mkdirSync(out, { recursive: true });
 mkdirSync(cache, { recursive: true });
 
@@ -28,12 +33,12 @@ if (!existsSync(video)) {
     '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', video]);
 }
 
-// ---------------------------------------------------------------- servidor: /ext = repo, /demo = harness, /cache = vídeo
+// ---------------------------------------------------------------- servidor: /ext = dist/ da raiz, /demo = harness, /cache = vídeo
 // O stub entra antes de qualquer script das páginas reais da extensão (popup.html, welcome.html).
 const server = createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   const [, area, ...rest] = url.pathname.split('/');
-  const base = { ext: root, demo: join(here, 'demo'), cache }[area];
+  const base = { ext: dist, demo: join(here, 'demo'), cache }[area];
   const file = base && normalize(join(base, ...rest));
   if (!file || !file.startsWith(base) || !existsSync(file) || !statSync(file).isFile()) return res.writeHead(404).end();
   let body = readFileSync(file);

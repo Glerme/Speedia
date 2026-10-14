@@ -18,18 +18,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
       - name: Conferir versão do manifest
         run: |
-          version=$(jq -r .version manifest.json)
+          version=$(jq -r .version static/manifest.json)
           if [ "v$version" != "$TAG" ]; then
-            echo "::error::A tag $TAG não bate com a versão $version do manifest.json"
+            echo "::error::A tag $TAG não bate com a versão $version do static/manifest.json"
             exit 1
           fi
 
       # As novidades da versão saem do CHANGELOG.md; sem a seção, a release não é publicada.
       - name: Extrair as novidades do changelog
         run: |
-          version=$(jq -r .version manifest.json)
+          version=$(jq -r .version static/manifest.json)
           awk -v v="$version" '$1 == "##" && $2 == v { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md > changes.md
           if ! grep -q '[^[:space:]]' changes.md; then
             echo "::error::Falta a seção '## $version' no CHANGELOG.md"
@@ -39,9 +46,9 @@ jobs:
 
       - name: Montar o zip
         run: |
-          scripts/build.sh full dist
-          scripts/build.sh store dist
-          cd dist && zip -r "speedia-$TAG.zip" speedia
+          scripts/build.sh full package
+          scripts/build.sh store package
+          cd package && zip -r "speedia-$TAG.zip" speedia
           # O Firefox espera o manifest na raiz do arquivo.
           (cd speedia && zip -r "../speedia-firefox-$TAG.zip" .)
           # Edições das lojas (sem download de vídeos).
@@ -58,26 +65,26 @@ jobs:
             echo "::notice::Secrets AMO_JWT_ISSUER/AMO_JWT_SECRET ausentes; release sem .xpi assinado"
             exit 0
           fi
-          npx --yes web-ext sign --channel=unlisted --source-dir dist/speedia --artifacts-dir dist/signed \
+          npx --yes web-ext sign --channel=unlisted --source-dir package/speedia --artifacts-dir package/signed \
             --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
-          mv dist/signed/*.xpi "dist/speedia-firefox-$TAG.xpi"
+          mv package/signed/*.xpi "package/speedia-firefox-$TAG.xpi"
 
       # O Firefox consulta este arquivo (update_url do manifest) para atualizar o .xpi instalado.
       - name: Gerar o arquivo de atualização do Firefox
         run: |
-          xpi="dist/speedia-firefox-$TAG.xpi"
+          xpi="package/speedia-firefox-$TAG.xpi"
           if [ ! -f "$xpi" ]; then
             echo "::notice::Sem .xpi assinado; release sem updates.json"
             exit 0
           fi
           jq -n \
-            --arg id "$(jq -r .browser_specific_settings.gecko.id manifest.json)" \
-            --arg version "$(jq -r .version manifest.json)" \
+            --arg id "$(jq -r .browser_specific_settings.gecko.id static/manifest.json)" \
+            --arg version "$(jq -r .version static/manifest.json)" \
             --arg link "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/speedia-firefox-$TAG.xpi" \
             --arg hash "sha256:$(sha256sum "$xpi" | cut -d' ' -f1)" \
             '{addons: {($id): {updates: [{version: $version, update_link: $link, update_hash: $hash}]}}}' \
-            > dist/updates.json
-          cat dist/updates.json
+            > package/updates.json
+          cat package/updates.json
 
       - name: Criar a release
         run: |
@@ -103,4 +110,4 @@ jobs:
           3. Clique em **Carregar extensão temporária** e escolha o zip.
           EOF
           sed -i "s/\$TAG/$TAG/g" notes.md
-          gh release create "$TAG" dist/speedia-*.zip dist/speedia-*.xpi dist/updates.json --title "Speedia $TAG" --notes-file notes.md --generate-notes
+          gh release create "$TAG" package/speedia-*.zip package/speedia-*.xpi package/updates.json --title "Speedia $TAG" --notes-file notes.md --generate-notes

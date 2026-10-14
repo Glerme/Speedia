@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Uso: scripts/build.sh <full|store> <outdir>
-# Única fonte da lista de arquivos do pacote. Saída em <outdir>/speedia (full)
+# Roda o npm run build e empacota o conteúdo de dist/. Saída em <outdir>/speedia (full)
 # ou <outdir>/speedia-store e <outdir>/speedia-store-firefox (store).
 set -euo pipefail
 
@@ -8,9 +8,11 @@ edition=${1:?uso: build.sh <full|store> <outdir>}
 out=${2:?uso: build.sh <full|store> <outdir>}
 cd "$(dirname "$0")/.."
 
-FILES=(manifest.json edition.js background.js content.js inject.js shortcuts.js popup.html popup.js popup-theme.js welcome.html welcome.css welcome.js icons _locales)
+# <outdir> não pode ser dist/: o build o apaga e não dá para copiar para dentro de si mesmo.
+[ "$(realpath -m "$out")" != "$(realpath -m dist)" ] || { echo "outdir não pode ser dist" >&2; exit 1; }
+npm run build >&2
 
-pack() { mkdir -p "$1" && cp -r "${FILES[@]}" "$1/"; }
+pack() { mkdir -p "$1" && cp -r dist/. "$1/"; }
 
 case "$edition" in
   full) rm -rf "$out/speedia"; pack "$out/speedia" ;;

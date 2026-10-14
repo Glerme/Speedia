@@ -110,8 +110,6 @@ Speedia does not collect any data and has no servers. Everything runs in your br
 
 ## Development
 
-There is no build step.
-
-- **Run locally:** load the repository folder as an unpacked extension (`chrome://extensions` → Developer mode → Load unpacked; in Firefox, `about:debugging#/runtime/this-firefox` → Load Temporary Add-on).
+- **Run locally:** run `npm ci` and `npm run build` (or `npm run watch`), then load the `dist/` folder as an unpacked extension (`chrome://extensions` → Developer mode → Load unpacked; in Firefox, `about:debugging#/runtime/this-firefox` → Load Temporary Add-on).
 - **Media:** the images and GIFs in `docs/media/` are regenerated with the scripts in `scripts/media`.
 - **Release:** pushing a `v*` tag triggers [`release.yml`](.github/workflows/release.yml), which publishes the Chrome zip and the signed Firefox `.xpi`, plus `updates.json` for automatic updates. The release only goes out if `CHANGELOG.md` has a `## <version>` section for it, and the `version` in `manifest.json` must match the tag (e.g. tag `v1.4.0` ↔ version `1.4.0`).
