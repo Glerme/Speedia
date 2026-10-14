@@ -31,11 +31,50 @@ function renderShortcuts(saved) {
   }
 }
 
+// Tema/cor de destaque (contrato compartilhado: storage.sync 'theme' e 'accent').
+const DEFAULT_ACCENT = '#bf22ed';
+const dark = matchMedia('(prefers-color-scheme: dark)');
+let theme = 'auto';
+let accent = DEFAULT_ACCENT;
+
+function lum(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function applyAppearance() {
+  const root = document.documentElement;
+  root.dataset.theme = theme === 'auto' ? (dark.matches ? 'dark' : 'light') : theme;
+  const l = lum(accent);
+  root.style.setProperty('--accent', accent);
+  // Contraste WCAG com #fff (L=1) vs #111 (L≈0.0056).
+  root.style.setProperty('--accent-fg', 1.05 / (l + 0.05) >= (l + 0.05) / 0.0556 ? '#fff' : '#111');
+}
+
+function setAppearance(t, a) {
+  theme = ['light', 'dark'].includes(t) ? t : 'auto';
+  accent = /^#[0-9a-f]{6}$/i.test(a) ? a : DEFAULT_ACCENT;
+  applyAppearance();
+}
+
+dark.addEventListener('change', applyAppearance);
+applyAppearance();
+chrome.storage.sync.get(['theme', 'accent'], (res) => {
+  if (!chrome.runtime.lastError) setAppearance(res?.theme, res?.accent);
+});
+
 speediaApplyI18n();
 renderShortcuts({});
 chrome.storage.sync.get('shortcuts', (res) => {
   if (!chrome.runtime.lastError) renderShortcuts(res?.shortcuts);
 });
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.shortcuts) renderShortcuts(changes.shortcuts.newValue);
+  if (area !== 'sync') return;
+  if (changes.theme || changes.accent) {
+    setAppearance(changes.theme ? changes.theme.newValue : theme, changes.accent ? changes.accent.newValue : accent);
+  }
+  if (changes.shortcuts) renderShortcuts(changes.shortcuts.newValue);
 });
