@@ -3,6 +3,14 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.4.0 — 2026-10-14
+
+- Nova seção Aparência no popup: tema Automático, Claro ou Escuro e cor principal à escolha,
+  com 8 cores prontas e uma roda de cor.
+- Barra sobre o vídeo com tema claro (vidro branco fosco) e escuro, e botões planos, sem o
+  fundo escuro com degradê.
+- Página de boas-vindas segue o tema e a cor escolhidos.
+
 ## 1.3.0 — 2026-10-14
 
 - Popup redesenhado: tema claro/escuro automático, cards, toggle do Auto PiP e gravação de
