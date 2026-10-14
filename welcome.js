@@ -13,7 +13,7 @@ function renderShortcuts(saved) {
     const hint = document.createElement('span');
     hint.className = 'hint';
     hint.textContent = action.hint;
-    th.append(hint);
+    th.append(" ", hint);
 
     const td = document.createElement('td');
     const pretty = speediaPretty(shortcuts[action.id]);

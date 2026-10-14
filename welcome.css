@@ -94,3 +94,7 @@ kbd {
 @media (prefers-reduced-motion: no-preference) {
   .btn { transition: filter .15s; }
 }
+
+@media (forced-colors: active) {
+  .hero h1 { color: CanvasText; background: none; }
+}
