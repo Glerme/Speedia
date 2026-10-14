@@ -566,6 +566,7 @@
 
   // Oclusão por barras fixas do site (cabeçalho do X, nav do Instagram). Estilos cacheados por frame.
   let styleCache = new Map();
+  let sideW = 0;
   function isFixedish(el) {
     let p = styleCache.get(el);
     if (p === undefined) {
@@ -574,6 +575,14 @@
       styleCache.set(el, p);
     }
     return p;
+  }
+
+  // Sem hit-test do vídeo: só vale cabeçalho/rodapé parcial, não fundo fixo nem tela cheia atrás do vídeo.
+  function plausibleOccluder(n, v) {
+    const ob = n.getBoundingClientRect();
+    const vr = v.getBoundingClientRect();
+    if (ob.width >= innerWidth * 0.98 && ob.height >= innerHeight * 0.98) return false;
+    return ob.top > vr.top || (ob.top <= vr.top && ob.bottom < vr.bottom);
   }
 
   // Oclusor = ancestral fixed/sticky, fora do vídeo e do player, que cobre o ponto antes de o vídeo aparecer.
@@ -589,8 +598,9 @@
       if (el === host || el.contains(v) || (player && player.contains(el))) continue;
       for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
         if (isFixedish(n)) {
-          if (!n.contains(v)) return n;
-          break;
+          if (n.contains(v)) break;
+          if (idx < 0 && !plausibleOccluder(n, v)) break;
+          return n;
         }
       }
     }
@@ -654,10 +664,12 @@
       // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
       let y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
       let hideBar = false;
+      // sideW: largura medida com a barra em .side; permite decidir side/fallback sem exibi-la antes.
+      let useSide = wantSide && !(sideW && bestRect.left - 12 - sideW < 8);
       // Decide a oclusão antes de mostrar a barra: ler offsetWidth de uma barra recém-exibida
       // força o estilo e dispara a transição de saída, deixando um fantasma em (0,0).
-      if (!fs && !wantSide) {
-        y = clearTop(best, x, y);
+      if (!fs && !useSide) {
+        y = clearTop(best, x, wantSide ? Math.max(bestRect.top + 8, 8) : y);
         hideBar = y > bestRect.bottom - 48;
       }
       if (hideBar) {
@@ -665,11 +677,13 @@
       } else {
         bar.hidden = false;
         // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
-        bar.classList.toggle('side', wantSide);
-        if (wantSide) {
-          x = bestRect.left - 12 - bar.offsetWidth;
+        bar.classList.toggle('side', useSide);
+        if (useSide) {
+          sideW = bar.offsetWidth;
+          x = bestRect.left - 12 - sideW;
           y = Math.max(bestRect.top, 8);
           if (x < 8) {
+            // Só na primeira medição: nos frames seguintes sideW já decide antes de exibir.
             bar.classList.remove('side');
             x = Math.max(bestRect.left, 0) + 8;
             y = clearTop(best, x, Math.max(bestRect.top + 8, 8));
