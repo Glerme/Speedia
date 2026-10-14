@@ -525,7 +525,14 @@
 
   function update() {
     scheduled = false;
-    if (!host.isConnected) document.documentElement.append(host);
+    if (!host.isConnected && !host.parentNode) document.documentElement.append(host);
+    syncHost();
+    const fs = host.parentNode !== document.documentElement;
+    // Ancestral com transform/filter vira o bloco de contenção do fixed: compensa a origem.
+    const hr = fs ? host.getBoundingClientRect() : null;
+    const ox = hr ? hr.left : 0;
+    const oy = hr ? hr.top : 0;
+    if (fs && mode === 'mini') unpin();
 
     let best = null;
     let bestRect = null;
@@ -553,10 +560,10 @@
     active = best;
     const onScreen = best && bestRect.bottom > 48 && bestRect.top < innerHeight - 48;
     if (onScreen) {
-      const inFeed = isIG && !!best.closest('article');
+      const inFeed = !fs && isIG && !!best.closest('article');
       bar.hidden = false;
       // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
-      bar.classList.toggle('side', isIG && !inFeed && /^\/reels?\//.test(location.pathname));
+      bar.classList.toggle('side', !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname));
       let x = bestRect.left - 12 - bar.offsetWidth;
       let y = Math.max(bestRect.top, 8);
       if (bar.classList.contains('side') && x < 8) bar.classList.remove('side');
@@ -565,7 +572,11 @@
         // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
         y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
       }
-      bar.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      if (fs) {
+        x = 8;
+        y = 8;
+      }
+      bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       setPressed(pipBtn, document.pictureInPictureElement === best);
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
@@ -581,7 +592,7 @@
       if (onScreen && isFinite(best.duration) && best.duration > 0) {
         seekVideo = best;
         const y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
-        seek.style.transform = `translate(${Math.round(bestRect.left)}px, ${Math.round(y)}px)`;
+        seek.style.transform = `translate(${Math.round(bestRect.left - ox)}px, ${Math.round(y - oy)}px)`;
         seek.style.width = Math.round(bestRect.width) + 'px';
         seek.hidden = false;
         if (!seekRaf) seekRaf = requestAnimationFrame(seekTick);
@@ -602,7 +613,7 @@
       }
     }
 
-    if (!pinned && settings.autoPip && autoAllowed()) {
+    if (!fs && !pinned && settings.autoPip && autoAllowed()) {
       for (const v of armed) {
         if (!v.isConnected) {
           armed.delete(v);
@@ -709,12 +720,24 @@
     return best;
   }
 
+  // Em tela cheia só o fullscreenElement (e seus filhos) aparece no top layer: leva o host para dentro dele.
+  const NO_CHILDREN = /^(AREA|BASE|BR|COL|EMBED|HR|IMG|INPUT|LINK|META|SOURCE|TRACK|WBR|VIDEO|AUDIO|CANVAS|IFRAME|OBJECT|SELECT|TEXTAREA|SVG)$/i;
+  function syncHost() {
+    const fsEl = document.fullscreenElement;
+    const want =
+      fsEl instanceof Element && !NO_CHILDREN.test(fsEl.localName) && fsEl !== document.documentElement
+        ? fsEl
+        : document.documentElement;
+    if (host.parentNode !== want) want.append(host);
+  }
+
   let addedControls = null; // vídeo que ganhou controles nativos só durante a tela cheia
   document.addEventListener('fullscreenchange', () => {
     if (addedControls && document.fullscreenElement !== addedControls) {
       addedControls.controls = false;
       addedControls = null;
     }
+    syncHost();
     schedule();
   });
 
