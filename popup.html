@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Speedia</title>
+    <title data-i18n="extName">Speedia</title>
     <style>
       /* Tokens: destaque extraído do ícone (violeta #bf22ed), ajustado para contraste AA em cada tema. */
       :root {
@@ -108,16 +108,16 @@
     </header>
 
     <section aria-labelledby="h-shortcuts">
-      <h2 id="h-shortcuts">Atalhos de teclado</h2>
+      <h2 id="h-shortcuts" data-i18n="popupShortcutsHeading"></h2>
       <div id="shortcuts"></div>
     </section>
 
     <section aria-labelledby="h-pip">
-      <h2 id="h-pip">Mini player</h2>
+      <h2 id="h-pip" data-i18n="popupMiniPlayerHeading"></h2>
       <label class="item">
         <span class="text">
-          Auto PiP
-          <span class="hint" style="display: block">Mini player automático ao rolar a página com o vídeo com som</span>
+          <span data-i18n="popupAutoPipLabel"></span>
+          <span class="hint" style="display: block" data-i18n="popupAutoPipHint"></span>
         </span>
         <span class="switch">
           <input type="checkbox" role="switch" id="autoPip" />
@@ -129,9 +129,9 @@
     <footer>
       <div id="bar">
         <span id="statusText" role="status" aria-live="polite"></span>
-        <button id="undo" type="button" hidden>Desfazer</button>
+        <button id="undo" type="button" hidden data-i18n="popupUndo"></button>
       </div>
-      <button id="reset" type="button">Restaurar atalhos padrão</button>
+      <button id="reset" type="button" data-i18n="popupReset"></button>
     </footer>
 
     <script src="shortcuts.js"></script>

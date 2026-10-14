@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Bem-vindo ao Speedia</title>
+  <title data-i18n="welcomeTitle"></title>
   <link rel="icon" href="icons/icon32.png">
   <link rel="stylesheet" href="welcome.css">
 </head>
@@ -13,50 +13,50 @@
     <header class="hero">
       <img src="icons/icon128.png" width="96" height="96" alt="">
       <h1>Speedia</h1>
-      <p class="tagline">Controle de velocidade, mini player e download de vídeos no Instagram e no X/Twitter.</p>
-      <p class="thanks">Obrigado por instalar! Veja abaixo o que o Speedia faz.</p>
+      <p class="tagline" data-i18n="welcomeTagline"></p>
+      <p class="thanks" data-i18n="welcomeThanks"></p>
     </header>
 
     <section aria-labelledby="recursos">
-      <h2 id="recursos">Recursos</h2>
+      <h2 id="recursos" data-i18n="welcomeFeaturesHeading"></h2>
       <ul class="cards">
         <li class="card">
           <span class="emoji" aria-hidden="true">⚡</span>
-          <h3>Controle de velocidade</h3>
-          <p>Acelere ou desacelere qualquer vídeo, de 0.5× a 3×, direto no player.</p>
+          <h3 data-i18n="welcomeFeatSpeedTitle"></h3>
+          <p data-i18n="welcomeFeatSpeedDesc"></p>
         </li>
         <li class="card">
           <span class="emoji" aria-hidden="true">🪟</span>
-          <h3>Mini player (PiP) ao rolar</h3>
-          <p>Ao rolar a página, o vídeo continua visível em uma janelinha flutuante.</p>
+          <h3 data-i18n="welcomeFeatPipTitle"></h3>
+          <p data-i18n="welcomeFeatPipDesc"></p>
         </li>
         <li class="card">
           <span class="emoji" aria-hidden="true">⬇️</span>
-          <h3>Download de vídeos</h3>
-          <p>Baixe vídeos do Instagram e do X/Twitter com um clique.</p>
+          <h3 data-i18n="welcomeFeatDownloadTitle"></h3>
+          <p data-i18n="welcomeFeatDownloadDesc"></p>
         </li>
       </ul>
     </section>
 
     <section aria-labelledby="atalhos">
-      <h2 id="atalhos">Seus atalhos</h2>
+      <h2 id="atalhos" data-i18n="welcomeShortcutsHeading"></h2>
       <div class="table-wrap">
         <table>
-          <caption class="sr-only">Atalhos de teclado atuais do Speedia</caption>
+          <caption class="sr-only" data-i18n="welcomeTableCaption"></caption>
           <thead>
-            <tr><th scope="col">Ação</th><th scope="col">Atalho</th></tr>
+            <tr><th scope="col" data-i18n="welcomeColAction"></th><th scope="col" data-i18n="welcomeColShortcut"></th></tr>
           </thead>
           <tbody id="shortcuts-body"></tbody>
         </table>
       </div>
-      <p class="tip">💡 Quer mudar? Clique no ícone do Speedia na barra do navegador para personalizar os atalhos.</p>
+      <p class="tip" data-i18n="welcomeTip"></p>
     </section>
 
     <section aria-labelledby="comecar">
-      <h2 id="comecar">Comece agora</h2>
+      <h2 id="comecar" data-i18n="welcomeStartHeading"></h2>
       <p class="links">
-        <a class="btn" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Abrir o Instagram</a>
-        <a class="btn" href="https://x.com/" target="_blank" rel="noopener noreferrer">Abrir o X</a>
+        <a class="btn" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" data-i18n="welcomeOpenInstagram"></a>
+        <a class="btn" href="https://x.com/" target="_blank" rel="noopener noreferrer" data-i18n="welcomeOpenX"></a>
       </p>
     </section>
   </main>
