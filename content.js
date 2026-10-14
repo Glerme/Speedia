@@ -92,8 +92,17 @@
 
   const CSS = `
     :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(0,0,0,.1); --bg-strong: rgba(0,0,0,.1); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
-      --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.2); --press: rgba(255,255,255,.32);
+      --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.14); --press: rgba(255,255,255,.26);
+      --bg-open: rgba(0,0,0,.06); --sheen-open: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%);
+      --rim: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.12) 50%, rgba(255,255,255,.28));
+      --text-shadow: 0 1px 2px rgba(0,0,0,.85), 0 0 8px rgba(0,0,0,.6); --icon-shadow: drop-shadow(0 1px 2px rgba(0,0,0,.85)) drop-shadow(0 0 6px rgba(0,0,0,.6));
       --shadow: 0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1); --ease: cubic-bezier(.2,.8,.2,1); }
+    /* Tema claro: vidro branco fosco, texto escuro, sem sombra pesada. O host recebe data-theme já resolvido (light|dark). */
+    :host([data-theme=light]) { --bg: rgba(255,255,255,.72); --bg-strong: rgba(255,255,255,.78); --bg-solid: rgba(250,250,252,.97); --bg-time: rgba(255,255,255,.94);
+      --fg: #111; --line: rgba(0,0,0,.14); --hover: rgba(0,0,0,.08); --press: rgba(0,0,0,.16);
+      --bg-open: rgba(255,255,255,.66); --sheen-open: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.1) 55%);
+      --rim: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.4) 50%, rgba(255,255,255,.7));
+      --text-shadow: none; --icon-shadow: none; --shadow: 0 8px 32px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.08); }
     /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
     [hidden]:not(.bar):not(.seek):not(.mini) { display: none !important; }
     .bar, .seek, .time, .ctl { transition: opacity .18s var(--ease), background-color .15s, padding .15s, display .18s;
@@ -107,20 +116,11 @@
     button:hover { background: var(--hover); }
     button:active { background: var(--press); transform: scale(.96); }
     button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
-    /* Legibilidade local: véu escuro leve só atrás do conteúdo (botões e .cur); o vidro em volta continua claro. */
-    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.48), rgba(0,0,0,.42)); --chip-cur: transparent; }
-    .cur { border-radius: 999px; }
-    :host .toast { background: var(--chip), var(--sheen), var(--bg-strong); }
-    button:not(.on) { background: var(--chip); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
-    /* Sem véu atrás do .cur (pedido do usuário): a legibilidade vem só da sombra do texto. */
-    .cur { background: var(--chip-cur); text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 8px rgba(0,0,0,.5); }
-    button:not(.on):hover { background: linear-gradient(var(--hover), var(--hover)), var(--chip); }
-    button:not(.on):active { background: linear-gradient(var(--press), var(--press)), var(--chip); }
-    /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
-    button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), linear-gradient(color-mix(in srgb, var(--accent) 62%, transparent), color-mix(in srgb, var(--accent) 62%, transparent)), var(--chip);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 6px -2px rgba(255,255,255,.25), 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
+    /* Botões planos e transparentes; só o ativo (velocidade, Auto PiP) leva a cor de destaque. */
+    .cur { border-radius: 999px; text-shadow: var(--text-shadow); }
+    button.on { color: var(--accent-fg); background: var(--accent); text-shadow: none; }
     button.on:hover { filter: brightness(1.12); }
-    /* Depois das regras de box-shadow acima: o halo de foco precisa vencer. */
+    button.on svg { filter: none; }
     button:focus-visible:is(*, .on) { box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
     svg { flex: none; }
     .bar { position: fixed; top: 0; left: 0; display: flex; flex-direction: column; gap: 4px; padding: 5px;
@@ -162,26 +162,28 @@
       pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
     /* Liquid glass claro (bar, ctl, toast): véu escuro mínimo + brilho branco suave em degradê. O brightness(.95) escurece só o que é claro
-       no fundo, (o véu local do .cur e dos botões, --chip, cuida do contraste sobre vídeo branco). */
+       no fundo, (a sombra do texto cuida do contraste sobre vídeo branco). */
     :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.05) 55%, rgba(255,255,255,.04));
       --glass-fx: blur(20px) saturate(1.8) brightness(.95); }
+    :host([data-theme=light]) { --sheen: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,.12) 55%);
+      --glass-fx: blur(20px) saturate(1.8) brightness(1.05); }
     .bar, .ctl, .toast { -webkit-backdrop-filter: var(--glass-fx); backdrop-filter: var(--glass-fx);
       box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -10px 16px -12px rgba(255,255,255,.18); }
     .ctl { box-shadow: 0 4px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -6px 10px -8px rgba(255,255,255,.18); }
     /* Borda em degradê (clara em cima, some embaixo): pseudo-elemento com máscara, pois border-image não segue o radius. */
     .bar::before, .ctl::before, .toast::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
-      background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.12) 50%, rgba(255,255,255,.28));
+      background: var(--rim);
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
       mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
-    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 0 8px rgba(0,0,0,.35); }
-    .bar svg, .ctl svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)) drop-shadow(0 0 6px rgba(0,0,0,.35)); }
+    .bar, .ctl, .toast { text-shadow: var(--text-shadow); }
+    .bar svg, .ctl svg { filter: var(--icon-shadow); }
     /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
        Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
     :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.95); }
-    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o contraste vem do véu local (o .cur não tem véu, só sombra no texto; --chip nos botões, ~3:1; a gota roxa leva o --chip por baixo). */
+    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o contraste vem da sombra do texto. */
     :host { --glass-open: blur(20px) saturate(1.8) brightness(1); }
     :host(.distort) { --glass-open: url(#speedia-glass) blur(20px) saturate(1.8) brightness(1); }
-    .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.06); --sheen: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 55%); }
+    .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: var(--bg-open); --sheen: var(--sheen-open); }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
@@ -190,7 +192,7 @@
     }
     @media (prefers-reduced-transparency: reduce) {
       .bar:hover, .bar:focus-within, .bar.side { --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
-      :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
+      :host, :host([data-theme]) { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
       .bar, .toast, .ctl { -webkit-backdrop-filter: none; backdrop-filter: none; }
       .bar::before, .ctl::before, .toast::before { display: none; }
     }
@@ -935,7 +937,25 @@
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
 
   const withDefaults = (saved) => ({ ...speediaDefaultShortcuts(), ...saved });
-  chrome.storage.sync.get({ autoPip: true, shortcuts: {} }).then((s) => {
+  // Tema e cor de destaque: 'auto' segue prefers-color-scheme; texto sobre o accent é #fff ou #111, o de maior contraste WCAG.
+  const DEFAULT_ACCENT = '#bf22ed';
+  const appearance = { theme: 'auto', accent: DEFAULT_ACCENT };
+  const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+  const lin = (c) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  function applyAppearance() {
+    const accent = /^#[0-9a-f]{6}$/i.test(appearance.accent) ? appearance.accent : DEFAULT_ACCENT;
+    const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(accent.slice(i, i + 2), 16)));
+    const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    host.style.setProperty('--accent', accent);
+    host.style.setProperty('--accent-fg', 1.05 / (L + 0.05) >= (L + 0.05) / 0.0556 ? '#fff' : '#111'); // 0.0556 = L(#111) + .05
+    host.dataset.theme = appearance.theme === 'light' || (appearance.theme !== 'dark' && !darkQuery.matches) ? 'light' : 'dark';
+  }
+  darkQuery.addEventListener('change', applyAppearance);
+
+  chrome.storage.sync.get({ autoPip: true, shortcuts: {}, theme: 'auto', accent: DEFAULT_ACCENT }).then((s) => {
+    appearance.theme = s.theme;
+    appearance.accent = s.accent;
+    applyAppearance();
     settings.autoPip = s.autoPip;
     settings.shortcuts = withDefaults(s.shortcuts);
     renderSettings();
@@ -946,9 +966,15 @@
       if (!settings.autoPip && mode === 'mini') unpin();
     }
     if (changes.shortcuts) settings.shortcuts = withDefaults(changes.shortcuts.newValue);
+    if (changes.theme || changes.accent) {
+      if (changes.theme) appearance.theme = changes.theme.newValue;
+      if (changes.accent) appearance.accent = changes.accent.newValue;
+      applyAppearance();
+    }
     renderSettings();
   });
 
+  applyAppearance();
   renderSettings();
   schedule();
 })();
