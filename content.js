@@ -167,11 +167,15 @@
     /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
        Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
     :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.5); }
+    /* Aberta (hover/foco/lateral) mais transparente: menos véu e brightness maior; o repouso mantém o contraste AA do .cur. */
+    :host { --glass-open: blur(20px) saturate(1.8) brightness(.85); }
+    :host(.distort) { --glass-open: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.85); }
+    .bar:hover, .bar:focus-within, .bar.side { --glass-fx: var(--glass-open); --bg-strong: rgba(0,0,0,.1); }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
-      :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.5); }
+      :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.5); --glass-open: blur(20px) saturate(1.8) brightness(.85); }
     }
     @media (prefers-reduced-transparency: reduce) {
       :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
