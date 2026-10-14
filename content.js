@@ -91,7 +91,7 @@
   const SEEK_H = 18; // altura da faixa de seek (CSS e posicionamento); não crescer: cobre botões nativos do Instagram
 
   const CSS = `
-    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.72); --bg-strong: rgba(18,18,22,.86); --bg-solid: rgba(18,18,22,.96);
+    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.78); --bg-strong: rgba(18,18,22,.86); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
       --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.16); --press: rgba(255,255,255,.26);
       --shadow: 0 6px 24px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); --ease: cubic-bezier(.2,.8,.2,1); }
     /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
@@ -139,7 +139,7 @@
       transition: height .12s var(--ease); }
     .seek:hover .track, .seek.drag .track { height: 8px; }
     .fill { width: 0; height: 100%; background: var(--accent); }
-    .time { position: absolute; left: 8px; bottom: 16px; padding: 6px 9px; border-radius: 8px; background: var(--bg-solid);
+    .time { position: absolute; left: 8px; bottom: 16px; padding: 6px 9px; border-radius: 8px; background: var(--bg-time);
       color: var(--fg); font: 600 13px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums;
       box-shadow: var(--shadow); opacity: 0; pointer-events: none; }
     .seek:hover .time, .seek.drag .time { opacity: 1; }
@@ -157,16 +157,14 @@
       inset 0 -6px 10px -6px rgba(255,255,255,.12); }
     .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.55); }
     .bar svg, .ctl svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.55)); }
-    /* Distorção da borda via filtro SVG (#speedia-glass, criado no shadow root). Só Chrome aceita url() no backdrop-filter;
-       no Firefox o @supports falha e o vidro fica só com blur, sem a declaração inválida derrubar o blur. */
-    @supports ((backdrop-filter: url(#speedia-glass) blur(1px)) or (-webkit-backdrop-filter: url(#speedia-glass) blur(1px))) {
-      :host { --glass-fx: url(#speedia-glass) blur(14px) saturate(1.6); }
-    }
+    /* Distorção da borda via filtro SVG (#speedia-glass, criado no shadow root). Só Chromium aceita url() no backdrop-filter;
+       o Firefox faz parse do url() mas perde o blur, então a classe .distort é posta por JS apenas no Chromium. */
+    :host(.distort) { --glass-fx: url(#speedia-glass) blur(14px) saturate(1.6); }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
-      :host { --glass-fx: blur(14px) saturate(1.6); }
+      :host, :host(.distort) { --glass-fx: blur(14px) saturate(1.6); }
     }
     @media (prefers-reduced-transparency: reduce) {
       :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
@@ -189,6 +187,8 @@
   const host = h('div', { id: 'speedia-host' });
   host.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;z-index:2147483647;';
   const root = host.attachShadow({ mode: 'closed' });
+  // Distorção do vidro (url() no backdrop-filter) só no Chromium; no Firefox derrubaria o blur.
+  if (navigator.userAgentData && !/Firefox\//.test(navigator.userAgent)) host.classList.add('distort');
   // Cliques na nossa interface não devem chegar aos handlers do site.
   for (const t of ['click', 'dblclick', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart']) {
     host.addEventListener(t, (e) => e.stopPropagation());
@@ -255,7 +255,7 @@
   pipBtn.hidden = miniPip.hidden = !canPip;
 
   const toastEl = h('div', { className: 'toast', role: 'status', ariaLive: 'polite', ariaAtomic: 'true' });
-  // Filtro de distorção do vidro. Fica no shadow root (url(#id) resolve ali, testado no Chrome) e só vale onde o @supports do CSS aceitar.
+  // Filtro de distorção do vidro. Fica no shadow root (url(#id) resolve ali, testado no Chrome) e só é usado quando o host tem a classe .distort (Chromium).
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const glassSvg = document.createElementNS(SVG_NS, 'svg');
   glassSvg.setAttribute('width', 0);
