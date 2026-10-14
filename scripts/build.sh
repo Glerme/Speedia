@@ -21,6 +21,8 @@ case "$edition" in
     m="$out/speedia-store/manifest.json"
     jq '.permissions -= ["downloads"] | .description = "__MSG_extDescriptionStore__"' "$m" > "$m.tmp" && mv "$m.tmp" "$m"
     cp -r "$out/speedia-store" "$out/speedia-store-firefox"
+    # browser_specific_settings é só do Firefox: sai do pacote Chrome.
+    jq 'del(.browser_specific_settings)' "$m" > "$m.tmp" && mv "$m.tmp" "$m"
     m="$out/speedia-store-firefox/manifest.json"
     jq 'del(.browser_specific_settings.gecko.update_url)' "$m" > "$m.tmp" && mv "$m.tmp" "$m"
     ;;
