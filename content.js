@@ -91,9 +91,9 @@
   const SEEK_H = 18; // altura da faixa de seek (CSS e posicionamento); não crescer: cobre botões nativos do Instagram
 
   const CSS = `
-    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.78); --bg-strong: rgba(18,18,22,.86); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
-      --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.16); --press: rgba(255,255,255,.26);
-      --shadow: 0 6px 24px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); --ease: cubic-bezier(.2,.8,.2,1); }
+    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(0,0,0,.28); --bg-strong: rgba(0,0,0,.28); --bg-solid: rgba(18,18,22,.96); --bg-time: rgba(18,18,22,.94);
+      --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.2); --press: rgba(255,255,255,.32);
+      --shadow: 0 8px 32px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1); --ease: cubic-bezier(.2,.8,.2,1); }
     /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
     [hidden]:not(.bar):not(.seek):not(.mini) { display: none !important; }
     .bar, .seek, .time, .ctl { transition: opacity .18s var(--ease), background-color .15s, padding .15s, display .18s;
@@ -107,12 +107,14 @@
     button:hover { background: var(--hover); }
     button:active { background: var(--press); transform: scale(.96); }
     button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
-    button.on { background: var(--accent); color: var(--accent-fg); }
-    button.on:hover { background: var(--accent); filter: brightness(1.12); }
+    /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
+    button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), color-mix(in srgb, var(--accent) 62%, transparent);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 6px -2px rgba(255,255,255,.25), 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
+    button.on:hover { filter: brightness(1.12); }
     svg { flex: none; }
     .bar { position: fixed; top: 0; left: 0; display: flex; flex-direction: column; gap: 4px; padding: 5px;
       border-radius: 20px; background: var(--sheen), var(--bg); color: var(--fg); font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
-      box-shadow: var(--shadow); opacity: .8; user-select: none; }
+      box-shadow: var(--shadow); opacity: .95; user-select: none; }
     .bar:hover, .bar:focus-within { opacity: 1; background: var(--sheen), var(--bg-strong); padding: 8px; }
     .cur { padding: 7px 12px; font-variant-numeric: tabular-nums; }
     .row { display: none; align-items: center; gap: 2px; }
@@ -148,27 +150,33 @@
       font: 500 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
       pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
-    /* Liquid glass (bar, ctl, toast): vidro com blur, borda clara, brilho especular no topo e reflexo interno. */
-    :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 45%); --glass-fx: blur(14px) saturate(1.6); }
+    /* Liquid glass claro (bar, ctl, toast): véu escuro mínimo + brilho branco suave em degradê. O brightness(.5) escurece só o que é claro
+       no fundo, para o texto branco manter 4.5:1 sobre vídeo branco (conta feita com a opacity de repouso da .bar). */
+    :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.05) 55%, rgba(255,255,255,.04));
+      --glass-fx: blur(20px) saturate(1.8) brightness(.5); }
     .bar, .ctl, .toast { -webkit-backdrop-filter: var(--glass-fx); backdrop-filter: var(--glass-fx);
-      box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 1px 0 rgba(255,255,255,.55),
-        inset 0 -8px 14px -8px rgba(255,255,255,.12), inset 0 10px 18px -12px rgba(255,255,255,.28); }
-    .ctl { box-shadow: 0 2px 10px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 1px 0 rgba(255,255,255,.55),
-      inset 0 -6px 10px -6px rgba(255,255,255,.12); }
-    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.55); }
-    .bar svg, .ctl svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.55)); }
-    /* Distorção da borda via filtro SVG (#speedia-glass, criado no shadow root). Só Chromium aceita url() no backdrop-filter;
-       o Firefox faz parse do url() mas perde o blur, então a classe .distort é posta por JS apenas no Chromium. */
-    :host(.distort) { --glass-fx: url(#speedia-glass) blur(14px) saturate(1.6); }
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -10px 16px -12px rgba(255,255,255,.18); }
+    .ctl { box-shadow: 0 4px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -6px 10px -8px rgba(255,255,255,.18); }
+    /* Borda em degradê (clara em cima, some embaixo): pseudo-elemento com máscara, pois border-image não segue o radius. */
+    .bar::before, .ctl::before, .toast::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+      background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.12) 50%, rgba(255,255,255,.28));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
+    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+    .bar svg, .ctl svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+    /* Lente suave só na borda (Chromium): mapa liso, neutro (128,128) no centro, #speedia-glass criado no shadow root.
+       Só Chromium aceita url() no backdrop-filter; o Firefox perderia o blur, então a classe .distort é posta por JS apenas no Chromium. */
+    :host(.distort) { --glass-fx: url(#speedia-glass) blur(20px) saturate(1.8) brightness(.5); }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
-      :host, :host(.distort) { --glass-fx: blur(14px) saturate(1.6); }
+      :host, :host(.distort) { --glass-fx: blur(20px) saturate(1.8) brightness(.5); }
     }
     @media (prefers-reduced-transparency: reduce) {
       :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
       .bar, .toast, .ctl { -webkit-backdrop-filter: none; backdrop-filter: none; }
+      .bar::before, .ctl::before, .toast::before { display: none; }
     }
   `;
 
@@ -265,13 +273,20 @@
   const glassFilter = document.createElementNS(SVG_NS, 'filter');
   const glassAttrs = { id: 'speedia-glass', x: 0, y: 0, width: '100%', height: '100%', 'color-interpolation-filters': 'sRGB' };
   for (const k in glassAttrs) glassFilter.setAttribute(k, glassAttrs[k]);
-  const turb = document.createElementNS(SVG_NS, 'feTurbulence');
-  const turbAttrs = { type: 'fractalNoise', baseFrequency: '0.035 0.05', numOctaves: 2, seed: 7, result: 'noise' };
-  for (const k in turbAttrs) turb.setAttribute(k, turbAttrs[k]);
+  // Mapa de deslocamento liso: R (x) e G (y) variam só nos ~14% da borda, 128 (neutro) no centro; 'screen' soma os canais disjuntos.
+  const lensMap = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs>'
+    + '<linearGradient id="x"><stop offset="0" stop-color="rgb(255,0,0)"/><stop offset=".14" stop-color="rgb(128,0,0)"/><stop offset=".86" stop-color="rgb(128,0,0)"/><stop offset="1" stop-color="rgb(1,0,0)"/></linearGradient>'
+    + '<linearGradient id="y" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(0,255,0)"/><stop offset=".14" stop-color="rgb(0,128,0)"/><stop offset=".86" stop-color="rgb(0,128,0)"/><stop offset="1" stop-color="rgb(0,1,0)"/></linearGradient>'
+    + '</defs><rect width="100" height="100" fill="#000"/><rect width="100" height="100" fill="url(#x)"/>'
+    + '<rect width="100" height="100" fill="url(#y)" style="mix-blend-mode:screen"/></svg>');
+  const lensImg = document.createElementNS(SVG_NS, 'feImage');
+  const lensAttrs = { href: lensMap, x: 0, y: 0, width: '100%', height: '100%', preserveAspectRatio: 'none', result: 'map' };
+  for (const k in lensAttrs) lensImg.setAttribute(k, lensAttrs[k]);
   const disp = document.createElementNS(SVG_NS, 'feDisplacementMap');
-  const dispAttrs = { in: 'SourceGraphic', in2: 'noise', scale: 10, xChannelSelector: 'R', yChannelSelector: 'G' };
+  const dispAttrs = { in: 'SourceGraphic', in2: 'map', scale: 12, xChannelSelector: 'R', yChannelSelector: 'G' };
   for (const k in dispAttrs) disp.setAttribute(k, dispAttrs[k]);
-  glassFilter.append(turb, disp);
+  glassFilter.append(lensImg, disp);
   glassSvg.append(glassFilter);
   root.append(h('style', { textContent: CSS }), glassSvg, bar, seek, mini, toastEl);
 
