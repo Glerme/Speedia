@@ -3,6 +3,12 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.4.1 — 2026-10-14
+
+- Nova edição para as lojas (Chrome Web Store e Firefox Add-ons), sem download de vídeos. A
+  release do GitHub continua com a versão completa e passa a trazer também os zips de loja.
+- README com prints e GIFs de como usar.
+
 ## 1.4.0 — 2026-10-14
 
 - Nova seção Aparência no popup: tema Automático, Claro ou Escuro e cor principal à escolha,
