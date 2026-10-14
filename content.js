@@ -91,7 +91,7 @@
   const SEEK_H = 18; // altura da faixa de seek (CSS e posicionamento); não crescer: cobre botões nativos do Instagram
 
   const CSS = `
-    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.78); --bg-strong: rgba(18,18,22,.94);
+    :host { --accent: #bf22ed; --accent-fg: #fff; --bg: rgba(18,18,22,.72); --bg-strong: rgba(18,18,22,.86); --bg-solid: rgba(18,18,22,.96);
       --fg: #fff; --line: rgba(255,255,255,.16); --hover: rgba(255,255,255,.16); --press: rgba(255,255,255,.26);
       --shadow: 0 6px 24px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); --ease: cubic-bezier(.2,.8,.2,1); }
     /* Os quatro blocos animados escondem com display sem !important, para o display poder entrar na transição. */
@@ -111,16 +111,15 @@
     button.on:hover { background: var(--accent); filter: brightness(1.12); }
     svg { flex: none; }
     .bar { position: fixed; top: 0; left: 0; display: flex; flex-direction: column; gap: 4px; padding: 5px;
-      border-radius: 20px; background: var(--bg); color: var(--fg); font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
-      -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4);
+      border-radius: 20px; background: var(--sheen), var(--bg); color: var(--fg); font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
       box-shadow: var(--shadow); opacity: .8; user-select: none; }
-    .bar:hover, .bar:focus-within { opacity: 1; background: var(--bg-strong); padding: 8px; }
+    .bar:hover, .bar:focus-within { opacity: 1; background: var(--sheen), var(--bg-strong); padding: 8px; }
     .cur { padding: 7px 12px; font-variant-numeric: tabular-nums; }
     .row { display: none; align-items: center; gap: 2px; }
     .bar:hover .row, .bar:focus-within .row { display: flex; }
     .bar:hover .cur, .bar:focus-within .cur { display: none; }
     .row + .row { padding-top: 4px; border-top: 1px solid var(--line); }
-    .bar.side { opacity: 1; padding: 8px; background: var(--bg-strong); }
+    .bar.side { opacity: 1; padding: 8px; background: var(--sheen), var(--bg-strong); }
     .bar.side .cur { display: none; }
     .bar.side .row { display: flex; flex-direction: column; align-items: stretch; }
     .bar.side button { justify-content: center; }
@@ -131,7 +130,7 @@
       font: 600 15px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; }
     .mini canvas { display: block; width: 100%; height: 100%; }
     .ctl { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; padding: 3px; border-radius: 999px;
-      background: var(--bg-strong); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; }
+      background: var(--sheen), var(--bg-strong); opacity: 0; }
     .mini:hover .ctl, .mini:focus-within .ctl { opacity: 1; }
     .prog { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: var(--accent); pointer-events: none; }
     .seek { position: fixed; top: 0; left: 0; height: ${SEEK_H}px; display: flex; align-items: flex-end; cursor: pointer;
@@ -140,23 +139,37 @@
       transition: height .12s var(--ease); }
     .seek:hover .track, .seek.drag .track { height: 8px; }
     .fill { width: 0; height: 100%; background: var(--accent); }
-    .time { position: absolute; left: 8px; bottom: 16px; padding: 6px 9px; border-radius: 8px; background: var(--bg-strong);
+    .time { position: absolute; left: 8px; bottom: 16px; padding: 6px 9px; border-radius: 8px; background: var(--bg-solid);
       color: var(--fg); font: 600 13px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums;
       box-shadow: var(--shadow); opacity: 0; pointer-events: none; }
     .seek:hover .time, .seek.drag .time { opacity: 1; }
     .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); max-width: min(80vw, 420px);
-      padding: 10px 16px; border-radius: 12px; background: var(--bg-strong); color: var(--fg);
-      font: 500 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; box-shadow: var(--shadow);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4);
+      padding: 10px 16px; border-radius: 12px; background: var(--sheen), var(--bg-strong); color: var(--fg);
+      font: 500 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
       pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(8px);
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s; }
+    /* Liquid glass (bar, ctl, toast): vidro com blur, borda clara, brilho especular no topo e reflexo interno. */
+    :host { --sheen: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 45%); --glass-fx: blur(14px) saturate(1.6); }
+    .bar, .ctl, .toast { -webkit-backdrop-filter: var(--glass-fx); backdrop-filter: var(--glass-fx);
+      box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 1px 0 rgba(255,255,255,.55),
+        inset 0 -8px 14px -8px rgba(255,255,255,.12), inset 0 10px 18px -12px rgba(255,255,255,.28); }
+    .ctl { box-shadow: 0 2px 10px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -6px 10px -6px rgba(255,255,255,.12); }
+    .bar, .ctl, .toast { text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+    .bar svg, .ctl svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.55)); }
+    /* Distorção da borda via filtro SVG (#speedia-glass, criado no shadow root). Só Chrome aceita url() no backdrop-filter;
+       no Firefox o @supports falha e o vidro fica só com blur, sem a declaração inválida derrubar o blur. */
+    @supports ((backdrop-filter: url(#speedia-glass) blur(1px)) or (-webkit-backdrop-filter: url(#speedia-glass) blur(1px))) {
+      :host { --glass-fx: url(#speedia-glass) blur(14px) saturate(1.6); }
+    }
     .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       button:active { transform: none; }
+      :host { --glass-fx: blur(14px) saturate(1.6); }
     }
     @media (prefers-reduced-transparency: reduce) {
-      :host { --bg: rgba(18,18,22,.96); }
+      :host { --bg: var(--bg-solid); --bg-strong: var(--bg-solid); --sheen: linear-gradient(transparent, transparent); }
       .bar, .toast, .ctl { -webkit-backdrop-filter: none; backdrop-filter: none; }
     }
   `;
@@ -242,7 +255,25 @@
   pipBtn.hidden = miniPip.hidden = !canPip;
 
   const toastEl = h('div', { className: 'toast', role: 'status', ariaLive: 'polite', ariaAtomic: 'true' });
-  root.append(h('style', { textContent: CSS }), bar, seek, mini, toastEl);
+  // Filtro de distorção do vidro. Fica no shadow root (url(#id) resolve ali, testado no Chrome) e só vale onde o @supports do CSS aceitar.
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const glassSvg = document.createElementNS(SVG_NS, 'svg');
+  glassSvg.setAttribute('width', 0);
+  glassSvg.setAttribute('height', 0);
+  glassSvg.setAttribute('aria-hidden', 'true');
+  glassSvg.style.cssText = 'position:absolute;pointer-events:none;';
+  const glassFilter = document.createElementNS(SVG_NS, 'filter');
+  const glassAttrs = { id: 'speedia-glass', x: 0, y: 0, width: '100%', height: '100%', 'color-interpolation-filters': 'sRGB' };
+  for (const k in glassAttrs) glassFilter.setAttribute(k, glassAttrs[k]);
+  const turb = document.createElementNS(SVG_NS, 'feTurbulence');
+  const turbAttrs = { type: 'fractalNoise', baseFrequency: '0.035 0.05', numOctaves: 2, seed: 7, result: 'noise' };
+  for (const k in turbAttrs) turb.setAttribute(k, turbAttrs[k]);
+  const disp = document.createElementNS(SVG_NS, 'feDisplacementMap');
+  const dispAttrs = { in: 'SourceGraphic', in2: 'noise', scale: 10, xChannelSelector: 'R', yChannelSelector: 'G' };
+  for (const k in dispAttrs) disp.setAttribute(k, dispAttrs[k]);
+  glassFilter.append(turb, disp);
+  glassSvg.append(glassFilter);
+  root.append(h('style', { textContent: CSS }), glassSvg, bar, seek, mini, toastEl);
 
   let seekVideo = null;
   let dragging = false;
