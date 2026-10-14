@@ -564,8 +564,65 @@
     requestAnimationFrame(update);
   }
 
+  // Oclusão por barras fixas do site (cabeçalho do X, nav do Instagram). Estilos cacheados por frame.
+  let styleCache = new Map();
+  let sideW = 0;
+  function isFixedish(el) {
+    let p = styleCache.get(el);
+    if (p === undefined) {
+      const pos = getComputedStyle(el).position;
+      p = pos === 'fixed' || pos === 'sticky';
+      styleCache.set(el, p);
+    }
+    return p;
+  }
+
+  // Sem hit-test do vídeo: só vale cabeçalho/rodapé parcial, não fundo fixo nem tela cheia atrás do vídeo.
+  function plausibleOccluder(n, v) {
+    const ob = n.getBoundingClientRect();
+    const vr = v.getBoundingClientRect();
+    if (ob.width >= innerWidth * 0.98 && ob.height >= innerHeight * 0.98) return false;
+    return ob.top > vr.top || (ob.top <= vr.top && ob.bottom < vr.bottom);
+  }
+
+  // Oclusor = ancestral fixed/sticky, fora do vídeo e do player, que cobre o ponto antes de o vídeo aparecer.
+  function occluderAt(v, x, y) {
+    if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
+    const list = document.elementsFromPoint(x, y);
+    const idx = list.indexOf(v);
+    // Vídeo fora do hit-test (pointer-events: none etc.): compara geometricamente com qualquer fixed/sticky no ponto.
+    const end = idx < 0 ? list.length : idx;
+    const player = v.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]') || v.parentElement;
+    for (let i = 0; i < end; i++) {
+      const el = list[i];
+      if (el === host || el.contains(v) || (player && player.contains(el))) continue;
+      for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+        if (isFixedish(n)) {
+          if (n.contains(v)) break;
+          if (idx < 0 && !plausibleOccluder(n, v)) break;
+          return n;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Desce y abaixo de cabeçalhos fixos (máx. 3 empilhados); Infinity se coberto por barra inferior.
+  function clearTop(v, x, y) {
+    for (let i = 0; i < 3; i++) {
+      const occ = occluderAt(v, x + 4, y + 4);
+      if (!occ) break;
+      const ob = occ.getBoundingClientRect();
+      if (ob.top > innerHeight / 2) return Infinity;
+      if (ob.bottom + 8 <= y) break;
+      y = ob.bottom + 8;
+    }
+    return y;
+  }
+
   function update() {
     scheduled = false;
+    styleCache = new Map();
     if (!host.isConnected && !host.parentNode) document.documentElement.append(host);
     syncHost();
     const fs = host.parentNode !== document.documentElement;
@@ -602,22 +659,43 @@
     const onScreen = best && bestRect.bottom > 48 && bestRect.top < innerHeight - 48;
     if (onScreen) {
       const inFeed = !fs && isIG && !!best.closest('article');
-      bar.hidden = false;
-      // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
-      bar.classList.toggle('side', !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname));
-      let x = bestRect.left - 12 - bar.offsetWidth;
-      let y = Math.max(bestRect.top, 8);
-      if (bar.classList.contains('side') && x < 8) bar.classList.remove('side');
-      if (!bar.classList.contains('side')) {
-        x = Math.max(bestRect.left, 0) + 8;
-        // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
-        y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
+      const wantSide = !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname);
+      let x = Math.max(bestRect.left, 0) + 8;
+      // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
+      let y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
+      let hideBar = false;
+      // sideW: largura medida com a barra em .side; permite decidir side/fallback sem exibi-la antes.
+      let useSide = wantSide && !(sideW && bestRect.left - 12 - sideW < 8);
+      // Decide a oclusão antes de mostrar a barra: ler offsetWidth de uma barra recém-exibida
+      // força o estilo e dispara a transição de saída, deixando um fantasma em (0,0).
+      if (!fs && !useSide) {
+        y = clearTop(best, x, wantSide ? Math.max(bestRect.top + 8, 8) : y);
+        hideBar = y > bestRect.bottom - 48;
       }
-      if (fs) {
-        x = 8;
-        y = 8;
+      if (hideBar) {
+        bar.hidden = true;
+      } else {
+        bar.hidden = false;
+        // No Reels a barra fica em coluna fora do vídeo, à esquerda, se houver espaço.
+        bar.classList.toggle('side', useSide);
+        if (useSide) {
+          sideW = bar.offsetWidth;
+          x = bestRect.left - 12 - sideW;
+          y = Math.max(bestRect.top, 8);
+          if (x < 8) {
+            // Só na primeira medição: nos frames seguintes sideW já decide antes de exibir.
+            bar.classList.remove('side');
+            x = Math.max(bestRect.left, 0) + 8;
+            y = clearTop(best, x, Math.max(bestRect.top + 8, 8));
+            if (y > bestRect.bottom - 48) bar.hidden = true;
+          }
+        }
+        if (fs) {
+          x = 8;
+          y = 8;
+        }
+        if (!bar.hidden) bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       }
-      bar.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
       setPressed(pipBtn, document.pictureInPictureElement === best);
       const sound = audible(best);
       soundIcon.toggleAttribute('hidden', !sound);
@@ -632,11 +710,27 @@
     if (isIG && !dragging) {
       if (onScreen && isFinite(best.duration) && best.duration > 0) {
         seekVideo = best;
-        const y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
-        seek.style.transform = `translate(${Math.round(bestRect.left - ox)}px, ${Math.round(y - oy)}px)`;
-        seek.style.width = Math.round(bestRect.width) + 'px';
-        seek.hidden = false;
-        if (!seekRaf) seekRaf = requestAnimationFrame(seekTick);
+        let y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;
+        // Sobe até o topo de barras fixas inferiores; some se sobrar pouco vídeo.
+        if (!fs) {
+          const sx = Math.min(Math.max(bestRect.left, 0) + 8, innerWidth - 1);
+          for (let i = 0; i < 2; i++) {
+            const occ = occluderAt(best, sx, y + SEEK_H / 2);
+            if (!occ) break;
+            const nt = occ.getBoundingClientRect().top - SEEK_H;
+            if (nt >= y) break;
+            y = nt;
+          }
+        }
+        if (y < Math.max(bestRect.top, 0) + 48) {
+          seek.hidden = true;
+          seekVideo = null;
+        } else {
+          seek.style.transform = `translate(${Math.round(bestRect.left - ox)}px, ${Math.round(y - oy)}px)`;
+          seek.style.width = Math.round(bestRect.width) + 'px';
+          seek.hidden = false;
+          if (!seekRaf) seekRaf = requestAnimationFrame(seekTick);
+        }
       } else {
         seek.hidden = true;
         seekVideo = null;
