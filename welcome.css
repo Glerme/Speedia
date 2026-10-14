@@ -1,26 +1,29 @@
 :root {
+  --accent: #bf22ed;
+  --accent-fg: #fff;
   --bg: #faf7fd;
   --surface: #ffffff;
   --text: #1c1626;
   --muted: #5d5470;
   --border: #e4dcef;
-  --accent: #9a14c8;
-  --accent-2: #0a6f93;
-  --on-accent: #ffffff;
   color-scheme: light dark;
 }
+/* Escuro: fallback pelo sistema antes do JS definir data-theme. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14101b;
-    --surface: #1e1829;
-    --text: #f1ecf7;
-    --muted: #b3a8c4;
-    --border: #3a3050;
-    --accent: #d27af5;
-    --accent-2: #4cc3e8;
-    --on-accent: #14101b;
+  :root:not([data-theme]) {
+    --bg: #14101b; --surface: #1e1829; --text: #f1ecf7; --muted: #b3a8c4; --border: #3a3050;
   }
 }
+:root[data-theme="light"] {
+  --bg: #faf7fd; --surface: #ffffff; --text: #1c1626; --muted: #5d5470; --border: #e4dcef;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #14101b; --surface: #1e1829; --text: #f1ecf7; --muted: #b3a8c4; --border: #3a3050;
+  color-scheme: dark;
+}
+/* Acento como texto/contorno sobre o fundo: mistura com o texto para manter contraste. */
+:root { --accent-text: color-mix(in srgb, var(--accent) 40%, var(--text)); }
 
 * { box-sizing: border-box; }
 body {
@@ -40,7 +43,7 @@ p { margin: 0; }
 .hero h1 {
   font-size: clamp(2rem, 6vw, 2.8rem);
   margin-top: 12px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: linear-gradient(90deg, var(--accent-text), color-mix(in srgb, var(--accent-text) 60%, var(--text)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -81,11 +84,12 @@ kbd {
 .links { display: flex; flex-wrap: wrap; gap: 12px; }
 .btn {
   display: inline-block; padding: 12px 20px; border-radius: 10px;
-  background: var(--accent); color: var(--on-accent);
+  background: var(--accent); color: var(--accent-fg);
+  border: 2px solid var(--accent-text);
   font-weight: 600; text-decoration: none;
 }
 .btn:hover { filter: brightness(1.08); }
-:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
