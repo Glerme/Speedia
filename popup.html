@@ -89,12 +89,13 @@
 
       footer { display: flex; flex-direction: column; gap: 8px; }
       #reset { align-self: flex-end; }
-      #status { display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 7px 10px;
-        background: var(--warn-bg); color: var(--warn-text); font-size: 12px; font-weight: 500; }
-      #status[hidden] { display: none; }
-      #status span { flex: 1; }
+      #bar { display: flex; align-items: center; gap: 8px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+      #bar.on { padding: 7px 10px; background: var(--warn-bg); color: var(--warn-text); }
+      #statusText { flex: 1; }
       #undo { padding: 3px 8px; background: transparent; border-color: currentColor; color: inherit; font-weight: 600; }
       #undo[hidden] { display: none; }
+      button:disabled { opacity: .4; cursor: default; }
+      button:disabled:hover { background: var(--control); }
     </style>
   </head>
   <body>
@@ -126,8 +127,8 @@
     </section>
 
     <footer>
-      <div id="status" role="status" aria-live="polite" hidden>
-        <span id="statusText"></span>
+      <div id="bar">
+        <span id="statusText" role="status" aria-live="polite"></span>
         <button id="undo" type="button" hidden>Desfazer</button>
       </div>
       <button id="reset" type="button">Restaurar atalhos padrão</button>

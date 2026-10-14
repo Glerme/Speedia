@@ -19,7 +19,8 @@
 
   const list = document.getElementById('shortcuts');
   const autoPip = document.getElementById('autoPip');
-  const status = document.getElementById('status');
+  const bar = document.getElementById('bar');
+  const $reset = document.getElementById('reset');
   const statusText = document.getElementById('statusText');
   const undoBtn = document.getElementById('undo');
   let shortcuts = speediaDefaultShortcuts();
@@ -44,15 +45,25 @@
   function say(text, { undo = false } = {}) {
     clearTimeout(statusTimer);
     statusText.textContent = text;
-    undoBtn.hidden = !undo;
     if (!undo) undoSnapshot = null;
-    status.hidden = false;
-    statusTimer = setTimeout(hideStatus, undo ? 8000 : 4000);
+    if (!undo && document.activeElement === undoBtn) $reset.focus();
+    undoBtn.hidden = !undo;
+    bar.classList.add('on');
+    if (!recording) statusTimer = setTimeout(hideStatus, undo ? 8000 : 4000);
   }
 
+  // A região role=status fica sempre no DOM; só o texto muda.
   function hideStatus() {
-    status.hidden = true;
+    clearTimeout(statusTimer);
+    if (document.activeElement === undoBtn) $reset.focus();
+    statusText.textContent = '';
+    undoBtn.hidden = true;
+    bar.classList.remove('on');
     undoSnapshot = null;
+  }
+
+  function focusKey(id) {
+    list.querySelectorAll('.key')[SPEEDIA_ACTIONS.findIndex((a) => a.id === id)]?.focus();
   }
 
   // Guarda o estado atual para o botão Desfazer antes de uma mudança destrutiva.
@@ -91,6 +102,7 @@
             save();
             say(T.cleared(a.label), { undo: true });
             render();
+            focusKey(a.id);
           },
         });
         clear.setAttribute('aria-label', T.clearAria(a.label));
@@ -109,11 +121,13 @@
     if (recording) list.querySelector('.rec')?.focus();
   }
 
-  function cancelRecording() {
+  function cancelRecording(refocus = true) {
     if (!recording) return;
+    const id = recording;
     recording = null;
     hideStatus();
     render();
+    if (refocus) focusKey(id);
   }
 
   window.addEventListener(
@@ -143,26 +157,27 @@
       if (taken) say(T.conflict(speediaPretty(combo), taken.label), { undo: true });
       else say(T.saved);
       render();
-      list.querySelectorAll('.key')[SPEEDIA_ACTIONS.findIndex((a) => a.id === target)]?.focus();
+      focusKey(target);
     },
     true
   );
 
-  // Clicar fora do botão em gravação cancela.
+  // Clicar fora da lista cancela a gravação (dentro dela, os próprios botões cuidam disso).
   document.addEventListener('mousedown', (e) => {
-    if (recording && !e.target.closest('.rec')) cancelRecording();
+    if (recording && !e.target.closest('#shortcuts')) cancelRecording(false);
   });
 
   undoBtn.onclick = () => {
     if (!undoSnapshot) return;
     shortcuts = undoSnapshot;
     save();
+    $reset.focus();
     hideStatus();
     render();
   };
 
   autoPip.onchange = () => chrome.storage.sync.set({ autoPip: autoPip.checked }).catch(() => {});
-  document.getElementById('reset').onclick = () => {
+  $reset.onclick = () => {
     recording = null;
     undoSnapshot = snapshot();
     shortcuts = speediaDefaultShortcuts();
@@ -175,7 +190,7 @@
     autoPip.checked = s.autoPip;
     shortcuts = { ...speediaDefaultShortcuts(), ...s.shortcuts };
     render();
-  });
+  }).catch(() => render());
 
   render();
 })();
