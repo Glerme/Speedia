@@ -108,6 +108,13 @@
     button:active { background: var(--press); transform: scale(.96); }
     button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px rgba(255,255,255,.85); }
     /* Velocidade ativa: gota de vidro roxa (accent translúcido + brilho interno). */
+    /* Legibilidade local: véu escuro leve só atrás do conteúdo (botões e .cur); o vidro em volta continua claro. */
+    :host { --chip: radial-gradient(ellipse at center, rgba(0,0,0,.34), rgba(0,0,0,.24)); }
+    .cur { border-radius: 999px; }
+    :host .toast { background: var(--chip), var(--sheen), var(--bg-strong); }
+    button:not(.on), .cur { background: var(--chip); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+    button:not(.on):hover { background: linear-gradient(var(--hover), var(--hover)), var(--chip); }
+    button:not(.on):active { background: linear-gradient(var(--press), var(--press)), var(--chip); }
     button.on { color: var(--accent-fg); background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0) 55%), color-mix(in srgb, var(--accent) 62%, transparent);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 6px -2px rgba(255,255,255,.25), 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
     button.on:hover { filter: brightness(1.12); }
