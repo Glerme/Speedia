@@ -23,3 +23,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   });
   return true;
 });
+
+// Abre a página de boas-vindas só na primeira instalação (não em atualizações).
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  }
+});
