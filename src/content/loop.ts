@@ -20,6 +20,27 @@ function isFixedish(el: Element) {
     }
     return p;
 }
+// Recorta o retângulo do vídeo por ancestrais com overflow que corta (carrossel do Instagram esconde os outros slides).
+let clipCache = new Map<Element, boolean>();
+function clipRect(v: HTMLVideoElement, r: DOMRect) {
+    let { left, top, right, bottom } = r;
+    for (let n = v.parentElement; n && n !== document.body && n !== document.documentElement; n = n === document.fullscreenElement ? null : n.parentElement) {
+        let c = clipCache.get(n);
+        if (c === undefined) {
+            const cs = getComputedStyle(n);
+            c = cs.overflowX !== 'visible' || cs.overflowY !== 'visible';
+            clipCache.set(n, c);
+        }
+        if (!c)
+            continue;
+        const b = n.getBoundingClientRect();
+        left = Math.max(left, b.left);
+        top = Math.max(top, b.top);
+        right = Math.min(right, b.right);
+        bottom = Math.min(bottom, b.bottom);
+    }
+    return { left, top, right, bottom, width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
+}
 // Sem hit-test do vídeo: só vale cabeçalho/rodapé parcial, não fundo fixo nem tela cheia atrás do vídeo.
 function plausibleOccluder(n: Element, v: HTMLVideoElement) {
     const ob = n.getBoundingClientRect();
@@ -71,6 +92,7 @@ function clearTop(v: HTMLVideoElement, x: number, y: number) {
 function update() {
     state.scheduled = false;
     styleCache = new Map();
+    clipCache = new Map();
     if (!ui.host.isConnected && !ui.host.parentNode)
         document.documentElement.append(ui.host);
     syncHost();
@@ -85,9 +107,12 @@ function update() {
     let bestRect = null;
     let bestScore = 0;
     for (const v of document.querySelectorAll('video')) {
-        const { r, area, ratio } = vis(v);
+        const { r, area: vArea, ratio } = vis(v);
         if (r.width < 120 || r.height < 80)
             continue;
+        // Área só do trecho visível dentro dos ancestrais que cortam; slide escondido fica com 0.
+        const cr = vArea ? clipRect(v, r) : r;
+        const area = vArea ? Math.max(0, Math.min(cr.right, innerWidth) - Math.max(cr.left, 0)) * Math.max(0, Math.min(cr.bottom, innerHeight) - Math.max(cr.top, 0)) : 0;
         if (area && covered(v, r))
             continue;
         if (ratio >= 0.6) {
@@ -106,7 +131,7 @@ function update() {
         if (score > bestScore) {
             bestScore = score;
             best = v;
-            bestRect = r;
+            bestRect = cr;
         }
     }
     state.active = best;
