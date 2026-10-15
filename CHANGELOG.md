@@ -3,6 +3,11 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.4.3 — 2026-10-15
+
+- Em carrosséis do Instagram, a barra só aparece quando o vídeo é o slide atual, em vez de ficar
+  sobre o vazio quando a mídia visível é uma imagem.
+
 ## 1.4.2 — 2026-10-14
 
 - Código reorganizado em TypeScript dentro de `src/`, com build (esbuild) gerando a extensão em
