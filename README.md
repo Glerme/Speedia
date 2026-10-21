@@ -25,6 +25,7 @@
 - Playback speed from 0.5x to 3x, from a glass bar over the video.
 - Mute and Picture-in-Picture buttons on the same bar.
 - Auto PiP: a mini player appears when you scroll past a video that is playing with sound.
+- PiP on tab switch (optional, Chrome only): the playing video opens in Picture-in-Picture when you switch tabs.
 - Video download.
 - Configurable keyboard shortcuts.
 - Light, dark or automatic theme, with a customizable main color.
@@ -67,6 +68,8 @@ Open a video on Instagram or X. The Speedia bar appears over it with the speed o
   <p align="center">
     <img src="docs/media/mini-player.gif" alt="Video continuing to play in a mini player after scrolling past it" width="480">
   </p>
+
+- **PiP on tab switch:** turn it on in the popup, under Mini player. When you switch tabs, the playing video opens in Picture-in-Picture. Chrome only; the browser may ask for permission the first time.
 
 - **Download:** the download button saves the video as an `.mp4` file.
 - **Fullscreen:** the bar stays visible in fullscreen on X. Press `F` to toggle fullscreen.

@@ -3,6 +3,13 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.5.0 — 2026-10-21
+
+- Nova opção "PiP ao trocar de aba" na seção Mini player do popup (desligada por padrão): ao
+  mudar de aba, o vídeo que está tocando abre sozinho em Picture-in-Picture. Só no Chrome, usando o
+  PiP automático do navegador, que pode pedir permissão na primeira vez.
+- `npm test` roda o autoteste da nova opção (`scripts/test-tab-pip.mjs`).
+
 ## 1.4.3 — 2026-10-15
 
 - Em carrosséis do Instagram, a barra só aparece quando o vídeo é o slide atual, em vez de ficar

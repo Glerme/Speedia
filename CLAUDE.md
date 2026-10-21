@@ -9,7 +9,8 @@ Speedia is a Manifest V3 browser extension (Chrome 121+, Firefox 128+) that adds
 - `npm ci` — install (only devDeps: esbuild, typescript, @types/chrome).
 - `npm run build` — wipes and rebuilds `dist/` (`build.mjs`). Load `dist/` as an unpacked extension (`chrome://extensions`) or temporary add-on (`about:debugging#/runtime/this-firefox`).
 - `npm run watch` — rebuild on change, including `static/` and popup/welcome HTML/CSS.
-- `npm run typecheck` — `tsc --noEmit`. There is no test suite or linter; typecheck + manual load in the browser is the verification.
+- `npm run typecheck` — `tsc --noEmit`. No linter.
+- `npm test` — runs `scripts/test-tab-pip.mjs`, a mock-based self-check of the tab-switch PiP handler (the only automated test). Otherwise typecheck + manual load in the browser is the verification.
 - `scripts/build.sh <full|store> <outdir>` — packaged editions (needs `jq`; `outdir` must not be `dist`).
 - `scripts/media/` — regenerates `docs/media/*` screenshots/GIFs from the real build (needs ffmpeg + Chrome; see its README).
 
@@ -18,14 +19,14 @@ Speedia is a Manifest V3 browser extension (Chrome 121+, Firefox 128+) that adds
 Each entry point in `build.mjs` becomes an IIFE bundle in `dist/`; `static/` (manifest, `_locales`, icons, `edition.js`) and the popup/welcome HTML/CSS are copied as-is.
 
 - **`src/inject/`** — content script in the page's `MAIN` world, at `document_start`. Wraps `fetch`/`XMLHttpRequest` and scans Instagram/X API JSON (and IG's embedded `script[type=application/json]`) for real `.mp4` URLs, since `<video>` uses `blob:`. Sends them to the isolated content script via `window` `CustomEvent('speedia:media')`. Also patches `HTMLMediaElement.prototype.pause` to ignore site-initiated pauses on videos marked `data-speedia-pin="1"` (the mini player / PiP video).
-- **`src/content/`** — isolated-world content script. `state.ts` holds shared mutable state and constants; `ui.ts` builds the bar in a closed shadow root (`#speedia-host`); `loop.ts` is the rAF positioning/occlusion/auto-PiP loop (sets/clears `speediaPin`); `pip.ts` mini player and native PiP; `media.ts` matches captured media to `<video>` elements and requests downloads; `events.ts` wires input, shortcuts and `chrome.storage` sync.
+- **`src/content/`** — isolated-world content script. `state.ts` holds shared mutable state and constants; `ui.ts` builds the bar in a closed shadow root (`#speedia-host`); `loop.ts` is the rAF positioning/occlusion/auto-PiP loop (sets/clears `speediaPin`); `pip.ts` mini player, native PiP and the tab-switch auto-PiP handler (`navigator.mediaSession.setActionHandler('enterpictureinpicture')`, registered only while `tabPip` is on; Chrome-only, no-op where unsupported); `media.ts` matches captured media to `<video>` elements and requests downloads; `events.ts` wires input, shortcuts and `chrome.storage` sync.
 - **`src/background/`** — service worker (Firefox uses `background.scripts`). Handles `{type:'download'}` messages, validating the URL is `https:` on an allowlisted CDN (`cdninstagram.com`, `fbcdn.net`, `twimg.com`) before `chrome.downloads`. Opens the welcome page on first install.
 - **`src/popup/`**, **`src/welcome/`** — extension pages. `popup-theme.js` (`theme-entry.ts`) runs before `popup.js` to apply the theme synchronously from a `localStorage` mirror (`speediaLook`), avoiding a flash, because `chrome.storage` is async.
 - **`src/shared/`** — `i18n.ts` (`speediaMsg`, `speediaApplyI18n` for `data-i18n*` attributes) and `shortcuts.ts` (action list, default combos, combo format like `Ctrl+Shift+KeyF` using `KeyboardEvent.code`; empty string = disabled).
 
 ### Cross-cutting contracts
 
-- **Settings** live in `chrome.storage.sync`: `autoPip`, `shortcuts`, `theme` (`auto|light|dark`), `accent`. Content script, popup and welcome page each read them and listen to `storage.onChanged`, so changing a key's shape means updating all three.
+- **Settings** live in `chrome.storage.sync`: `autoPip`, `tabPip` (PiP on tab switch, default `false`), `shortcuts`, `theme` (`auto|light|dark`), `accent`. Content script, popup and welcome page each read them and listen to `storage.onChanged`, so changing a key's shape means updating all three.
 - **Editions**: `static/edition.js` sets `globalThis.SPEEDIA_EDITION = 'full'`; `scripts/build.sh store` overwrites it with `'store'`, drops the `downloads` permission and swaps the description. Every download-related path (inject capture, content download button, background listener, welcome feature item) checks `SPEEDIA_EDITION === 'store'` — new download features must too. `edition.js` is loaded before each bundle via the manifest / HTML `<script>` tags.
 - **i18n**: all user-facing strings go through `_locales/{en,pt_BR}/messages.json`; add keys to both.
 - **Firefox**: no PiP API for pages/extensions (`canPip` in `state.ts`), so the mini player is the fallback. `browser_specific_settings` is stripped from the Chrome store package.
