@@ -27,7 +27,7 @@
 - Auto PiP: a mini player appears when you scroll past a video that is playing with sound.
 - PiP on tab switch (optional, Chrome only): the playing video opens in Picture-in-Picture when you switch tabs. Chrome also requires allowing the site once, using the popup's "Allow this site" button.
 - Video download.
-- Works on Instagram, X/Twitter, TikTok, Facebook and Reddit, always active, with the same bar on every site.
+- Always active, with the same bar on every site.
 - Configurable keyboard shortcuts.
 - Light, dark or automatic theme, with a customizable main color.
 - The bar stays visible in fullscreen on X.
@@ -120,7 +120,7 @@ A small page opens after installation, listing the features and shortcuts.
 
 ## Privacy
 
-Speedia does not collect any data and has no servers. Everything runs in your browser. It requests only two permissions: `downloads` (to save videos) and `storage` (to keep your settings). On Firefox, the manifest declares `data_collection_permissions: none`.
+Speedia does not collect any data and has no servers. Everything runs in your browser, only on the 5 supported sites (Instagram, X, TikTok, Facebook and Reddit). Downloads come straight from the site's CDN, never through a Speedia server. It requests three permissions: `activeTab` (reads the current tab's address only for the "Allow this site" button), `downloads` (to save videos) and `storage` (to keep your settings). On Firefox, the manifest declares `data_collection_permissions: none`.
 
 ## Development
 

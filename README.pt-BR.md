@@ -27,7 +27,7 @@
 - Auto PiP: um mini player aparece ao rolar a página além de um vídeo que está tocando com som.
 - PiP ao trocar de aba (opcional, só no Chrome): o vídeo que está tocando abre em Picture-in-Picture quando você muda de aba. O Chrome também exige liberar o site uma vez, pelo botão "Liberar este site" do popup.
 - Download de vídeos.
-- Funciona no Instagram, X/Twitter, TikTok, Facebook e Reddit, sempre ativo, com a mesma barra em todos os sites.
+- Sempre ativo, com a mesma barra em todos os sites.
 - Atalhos de teclado configuráveis.
 - Tema claro, escuro ou automático, com cor principal personalizável.
 - A barra continua visível em tela cheia no X.
@@ -120,7 +120,7 @@ Uma página pequena abre após a instalação, com os recursos e os atalhos.
 
 ## Privacidade
 
-O Speedia não coleta dados e não tem servidores. Tudo roda no seu navegador. Ele pede apenas duas permissões: `downloads` (para salvar vídeos) e `storage` (para guardar suas configurações). No Firefox, o manifest declara `data_collection_permissions: none`.
+O Speedia não coleta dados e não tem servidores. Tudo roda no seu navegador, apenas nos 5 sites suportados (Instagram, X, TikTok, Facebook e Reddit). O download vem direto do CDN do site, sem passar por servidor do Speedia. Ele pede três permissões: `activeTab` (lê o endereço da aba atual só para o botão "Liberar este site"), `downloads` (para salvar vídeos) e `storage` (para guardar suas configurações). No Firefox, o manifest declara `data_collection_permissions: none`.
 
 ## Desenvolvimento
 
