@@ -5,7 +5,7 @@
 <h1 align="center">Speedia</h1>
 
 <p align="center">
-  Speed control, mini player and download for videos on Instagram and X (Twitter).
+  Speed control, mini player and download for videos on Instagram, X (Twitter), TikTok, Facebook and Reddit.
 </p>
 
 <p align="center">
@@ -27,13 +27,14 @@
 - Auto PiP: a mini player appears when you scroll past a video that is playing with sound.
 - PiP on tab switch (optional, Chrome only): the playing video opens in Picture-in-Picture when you switch tabs. Chrome also requires allowing the site once, using the popup's "Allow this site" button.
 - Video download.
+- Always active, with the same bar on every site.
 - Configurable keyboard shortcuts.
 - Light, dark or automatic theme, with a customizable main color.
 - The bar stays visible in fullscreen on X.
 - Welcome page on install.
 - Portuguese (BR) and English.
 
-Works on Instagram and X/Twitter. Requires Chrome 121+ or Firefox 128+.
+Works on Instagram, X/Twitter, TikTok, Facebook and Reddit. Requires Chrome 121+ or Firefox 128+.
 
 ## Install
 
@@ -42,7 +43,7 @@ Works on Instagram and X/Twitter. Requires Chrome 121+ or Firefox 128+.
 1. Download `speedia-vX.zip` from the [latest release](https://github.com/Glerme/Speedia/releases/latest) and extract it.
 2. Open `chrome://extensions` and turn on **Developer mode**.
 3. Click **Load unpacked** and select the extracted `speedia` folder.
-4. Reload any Instagram or X tabs that are already open.
+4. Reload any Instagram, X, TikTok, Facebook or Reddit tabs that are already open.
 
 ### Firefox
 
@@ -57,7 +58,7 @@ Build either one with `scripts/build.sh <full|store> <outdir>` (e.g. `scripts/bu
 
 ## Usage
 
-Open a video on Instagram or X. The Speedia bar appears over it with the speed options (0.5x to 3x) and the mute, PiP, Auto PiP and download buttons.
+Open a video on Instagram, X, TikTok, Facebook or Reddit. The Speedia bar appears over it with the speed options (0.5x to 3x) and the mute, PiP, Auto PiP and download buttons.
 
 <p align="center">
   <img src="docs/media/overlay.png" alt="Speedia bar over a video, showing the speed options and the mute, PiP, Auto PiP and download buttons" width="480">
@@ -69,8 +70,8 @@ Open a video on Instagram or X. The Speedia bar appears over it with the speed o
     <img src="docs/media/mini-player.gif" alt="Video continuing to play in a mini player after scrolling past it" width="480">
   </p>
 
-- **PiP on tab switch** (Chrome only): when you switch tabs, the video playing with sound opens in Picture-in-Picture. Chrome blocks this until you allow the site, and only you can do that (extensions can't change this permission). Do it once for each site (Instagram and X):
-  1. Open Instagram or X and click the Speedia icon to open the popup.
+- **PiP on tab switch** (Chrome only): when you switch tabs, the video playing with sound opens in Picture-in-Picture. Chrome blocks this until you allow the site, and only you can do that (extensions can't change this permission). Do it once for each site (Instagram, X, TikTok, Facebook and Reddit):
+  1. Open Instagram, X, TikTok, Facebook or Reddit and click the Speedia icon to open the popup.
   2. Under Mini player, turn on **PiP on tab switch**.
   3. Click **Allow this site**. Chrome's settings page for that site opens.
   4. Find **Automatic picture-in-picture** and set it to **Allow**.
@@ -79,7 +80,7 @@ Open a video on Instagram or X. The Speedia bar appears over it with the speed o
 
   5. Go back to the site's tab and reload it. Play a video with sound and switch tabs.
 
-  Or from Chrome's menu: `chrome://settings/content/autoPictureInPicture` > Allowed to enter picture-in-picture automatically > Add > `https://www.instagram.com` (or `https://x.com`).
+  Or from Chrome's menu: `chrome://settings/content/autoPictureInPicture` > Allowed to enter picture-in-picture automatically > Add > `https://www.instagram.com` (or `https://x.com`, `https://www.tiktok.com`, `https://www.facebook.com`, `https://www.reddit.com`).
 
 - **Download:** the download button saves the video as an `.mp4` file.
 - **Fullscreen:** the bar stays visible in fullscreen on X. Press `F` to toggle fullscreen.
@@ -119,7 +120,7 @@ A small page opens after installation, listing the features and shortcuts.
 
 ## Privacy
 
-Speedia does not collect any data and has no servers. Everything runs in your browser. It requests only two permissions: `downloads` (to save videos) and `storage` (to keep your settings). On Firefox, the manifest declares `data_collection_permissions: none`.
+Speedia does not collect any data and has no servers. Everything runs in your browser, only on the 5 supported sites (Instagram, X, TikTok, Facebook and Reddit). Downloads come straight from the site's CDN, never through a Speedia server. It requests three permissions: `activeTab` (reads the current tab's address only for the "Allow this site" button), `downloads` (to save videos) and `storage` (to keep your settings). On Firefox, the manifest declares `data_collection_permissions: none`.
 
 ## Development
 

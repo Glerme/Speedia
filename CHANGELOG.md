@@ -3,6 +3,17 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
+## 1.6.0 — 2026-10-21
+
+- Novos sites: TikTok, Facebook e Reddit, sempre ativos como Instagram e X, com a mesma barra de
+  velocidade, som, PiP, mini player e download. O download captura o mp4 real no TikTok e no
+  Facebook (via respostas da API) e no Reddit (a partir do `shreddit-player`). Os CDNs
+  `tiktokcdn.com`, `tiktokcdn-us.com`, `tiktokv.com` e `redd.it` entram na lista permitida do
+  download (edição `store` continua sem download).
+- Vídeos dentro de shadow roots abertos agora são encontrados (`allVideos()`).
+- O botão "Liberar este site" e o PiP ao trocar de aba cobrem os novos domínios.
+- `npm test` roda também `scripts/test-media-sites.mjs` e `scripts/test-inject-sites.mjs`.
+
 ## 1.5.0 — 2026-10-21
 
 - Nova opção "PiP ao trocar de aba" na seção Mini player do popup (desligada por padrão): ao
