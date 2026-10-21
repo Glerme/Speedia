@@ -18,6 +18,18 @@ interface MediaNode {
   pk?: string | number;
   id?: string | number;
   video_duration?: number;
+  video?: {
+    playAddr?: string | { UrlList?: string[] };
+    downloadAddr?: string | { UrlList?: string[] };
+    bitrateInfo?: { Bitrate?: number; PlayAddr?: { UrlList?: string[] } }[];
+    duration?: number;
+  };
+  browser_native_hd_url?: string;
+  browser_native_sd_url?: string;
+  playable_url_quality_hd?: string;
+  playable_url?: string;
+  playable_duration_in_ms?: number;
+  length_in_second?: number;
 }
 
 type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
@@ -82,6 +94,53 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
     });
   }
 
+  function httpsUrl(value: unknown): value is string {
+    if (typeof value !== 'string') return false;
+    try {
+      return new URL(value).protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  function fromTikTok(o: MediaNode, out: MediaRecord[]): void {
+    if (typeof o.id !== 'string' || !/^\d+$/.test(o.id) || !o.video) return;
+    const video = o.video;
+    const urls: unknown[] = [];
+    if (Array.isArray(video.bitrateInfo)) {
+      for (const variant of [...video.bitrateInfo].sort((a, b) => (b?.Bitrate || 0) - (a?.Bitrate || 0))) {
+        if (Array.isArray(variant?.PlayAddr?.UrlList)) urls.push(...variant.PlayAddr.UrlList);
+      }
+    }
+    // PlayAddr costuma ser sem marca d'água; downloadAddr fica como alternativa.
+    for (const addr of [video.playAddr, video.downloadAddr]) {
+      if (typeof addr === 'string') urls.push(addr);
+      else if (Array.isArray(addr?.UrlList)) urls.push(...addr.UrlList);
+    }
+    const url = urls.find(httpsUrl);
+    if (!url) return;
+    out.push({
+      id: 'tt:' + o.id,
+      keys: [o.id],
+      duration: typeof video.duration === 'number' && Number.isFinite(video.duration) ? video.duration : null,
+      url,
+    });
+  }
+
+  function fromFacebook(o: MediaNode, out: MediaRecord[]): void {
+    if ((typeof o.id !== 'string' && typeof o.id !== 'number') || !String(o.id)) return;
+    const url = [o.browser_native_hd_url, o.playable_url_quality_hd, o.browser_native_sd_url, o.playable_url].find(httpsUrl);
+    if (!url) return;
+    const duration = typeof o.playable_duration_in_ms === 'number'
+      ? o.playable_duration_in_ms / 1000 : o.length_in_second;
+    out.push({
+      id: 'fb:' + o.id,
+      keys: [String(o.id)],
+      duration: typeof duration === 'number' && Number.isFinite(duration) ? duration : null,
+      url,
+    });
+  }
+
   function walk(rootNode: unknown): void {
     const out: MediaRecord[] = [];
     const stack: [unknown, string | null][] = [[rootNode, null]];
@@ -100,6 +159,10 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
 
       if (node.video_info) fromTwitter(node as MediaNode, out);
       if (node.video_versions || node.video_url) fromInstagram(node as MediaNode, code, out);
+      if (node.video) fromTikTok(node as MediaNode, out);
+      if (node.browser_native_hd_url || node.browser_native_sd_url || node.playable_url_quality_hd || node.playable_url) {
+        fromFacebook(node as MediaNode, out);
+      }
 
       for (const key in node) {
         const child = node[key];
@@ -111,7 +174,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
 
   function scan(text: string | null): void {
     if (typeof text !== 'string' || text.length < 20) return;
-    if (!text.includes('video_versions') && !text.includes('video_info') && !text.includes('video_url')) return;
+    if (!/video_versions|video_info|video_url|playAddr|downloadAddr|bitrateInfo|browser_native_(?:hd|sd)_url|playable_url/.test(text)) return;
     if (text.startsWith('for (;;);')) text = text.slice(9);
     try {
       walk(JSON.parse(text));
@@ -125,7 +188,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
     }
   }
 
-  const interesting = (url: string | undefined): boolean => /graphql|\/api\//.test(url || '');
+  const interesting = (url: string | undefined): boolean => /graphql|\/api\/|\/api\?/.test(url || '');
 
   const origFetch = STORE ? null : window.fetch;
   if (origFetch) {
@@ -159,7 +222,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
       return Reflect.apply(origOpen, this, arguments);
     };
 
-    // Dados que já vêm embutidos no HTML inicial (Instagram).
+    // Dados que já vêm embutidos no HTML inicial (Instagram e TikTok).
     document.addEventListener('DOMContentLoaded', () => {
       for (const s of document.querySelectorAll('script[type="application/json"]')) scan(s.textContent);
     });
