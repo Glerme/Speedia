@@ -50,11 +50,16 @@ function videoId(v: HTMLVideoElement) {
         if (el.querySelectorAll('video').length > 1)
             break;
         const links = el.matches('a[href]') ? [el] : el.querySelectorAll('a[href]');
+        const ids = new Set<string>();
         for (const link of links) {
             const id = (link.getAttribute('href') || '').match(re)?.[1];
             if (id)
-                return id;
+                ids.add(id);
         }
+        if (ids.size > 1)
+            break;
+        if (ids.size === 1)
+            return ids.values().next().value;
         if (el === document.body)
             break;
     }
@@ -62,7 +67,7 @@ function videoId(v: HTMLVideoElement) {
 }
 function redditPlayer(v: HTMLVideoElement) {
     for (let el: Element | null = v; el;) {
-        const player = el.closest('shreddit-player');
+        const player = el.closest('shreddit-player, shreddit-player-2');
         if (player)
             return player;
         const root = el.getRootNode();

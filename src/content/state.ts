@@ -17,7 +17,8 @@ export function refreshPlayerRoots() {
     function discover(root: Document | ShadowRoot) {
         for (const el of root.querySelectorAll('*')) {
             if (el.shadowRoot) {
-                playerRoots.push(el.shadowRoot);
+                if (el.shadowRoot.querySelectorAll('video').length)
+                    playerRoots.push(el.shadowRoot);
                 discover(el.shadowRoot);
             }
         }

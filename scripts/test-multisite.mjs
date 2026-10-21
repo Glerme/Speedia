@@ -13,7 +13,7 @@ const media = await build({
     } }],
 });
 class ShadowRoot { constructor(host) { this.host = host; } }
-async function download(site, path, { entries = [], player = null, link = null, src = '', parent = null } = {}) {
+async function download(site, path, { entries = [], player = null, link = null, src = '', parent = null, lightPlayer = false } = {}) {
     let message;
     const context = {
         module: { exports: {} }, site, entries: new Map(entries.map((m) => [m.id, m])), ShadowRoot,
@@ -24,7 +24,7 @@ async function download(site, path, { entries = [], player = null, link = null, 
     const video = {
         duration: 10, currentSrc: src, parentElement: parent,
         matches: () => false, querySelectorAll: (selector) => selector === 'video' ? [] : link ? [{ getAttribute: () => link }] : [],
-        closest: () => null, getRootNode: () => player ? new ShadowRoot(player) : {},
+        closest: (selector) => lightPlayer ? player?.closest(selector) : null, getRootNode: () => player && !lightPlayer ? new ShadowRoot(player) : {},
     };
     runInNewContext(media.outputFiles[0].text, context);
     await context.module.exports.download(video);
@@ -36,15 +36,22 @@ for (const [site, path, prefix] of [['tiktok', '/@perfil/video/123', 'tiktok'], 
     assert.equal(result.url, 'https://cdn.exemplo/video.mp4');
 }
 const player = {
-    closest() { return this; },
+    tagName: 'shreddit-player',
+    closest(selector) { return selector.split(', ').includes(this.tagName) ? this : null; },
     getAttribute(name) { return name === 'post-id' ? 't3_abc' : JSON.stringify({ playbackMp4s: { permutations: [
         { resolution: 360, source: { url: 'https://v.redd.it/baixo.mp4' } },
         { resolution: 1080, source: { url: 'https://v.redd.it/alto.mp4' } },
         { resolution: 2160, hasAudio: false, source: { url: 'https://v.redd.it/sem-audio.mp4' } },
     ] } }); },
 };
-assert.equal((await download('reddit', '/', { player })).url, 'https://v.redd.it/alto.mp4');
-assert.equal((await download('reddit', '/', { player })).filename, 'reddit_abc.mp4');
+for (const tagName of ['shreddit-player', 'shreddit-player-2']) {
+    player.tagName = tagName;
+    for (const lightPlayer of [false, true]) {
+        const result = await download('reddit', '/', { player, lightPlayer });
+        assert.equal(result.url, 'https://v.redd.it/alto.mp4');
+        assert.equal(result.filename, 'reddit_abc.mp4');
+    }
+}
 assert.equal((await download('tiktok', '/', { src: 'https://cdn.exemplo/direto.mp4' })).url, 'https://cdn.exemplo/direto.mp4');
 assert.equal((await download('fb', '/', { entries: [{ id: 'duracao', duration: 10, url: 'https://cdn.exemplo/duracao.mp4' }] })).url, 'https://cdn.exemplo/duracao.mp4');
 
@@ -71,6 +78,12 @@ for (const [site, path, neighbor, local, prefix] of [
     assert.equal(result.url, 'https://cdn.exemplo/atual.mp4');
     assert.equal(result.filename, `${prefix}_123.mp4`);
     assert.equal(await download(site, '/', { entries, parent: post }), undefined);
+    // Só o vídeo atual está montado; links de recomendações ainda são ambíguos.
+    feed.querySelectorAll = (selector) => selector === 'video' ? [{}] : [neighbor, local].map((href) => ({ getAttribute: () => href }));
+    const singleVideoFeed = await download(site, path, { entries, parent: post });
+    assert.equal(singleVideoFeed.url, 'https://cdn.exemplo/atual.mp4');
+    assert.equal(singleVideoFeed.filename, `${prefix}_123.mp4`);
+    assert.equal(await download(site, '/', { entries, parent: post }), undefined);
     post.querySelectorAll = (selector) => selector === 'video' ? [{}] : [{ getAttribute: () => local }];
     assert.equal((await download(site, '/', { entries, parent: post })).url, 'https://cdn.exemplo/atual.mp4');
 }
@@ -91,7 +104,10 @@ for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.fac
     const innerVideos = [video3];
     const inner = root(innerVideos);
     const outer = root([video2], [{ shadowRoot: inner }]);
-    const hosts = [{ shadowRoot: outer }];
+    const empty = Array.from({ length: 200 }, () => ({ shadowRoot: root([]) }));
+    // Root sem vídeo próprio ainda precisa ser percorrido para descobrir o nested.
+    const wrapper = root([], [{ shadowRoot: outer }]);
+    const hosts = [{ shadowRoot: wrapper }, ...empty];
     const document = root([video1], hosts);
     const context = { module: { exports: {} }, document, location: { hostname }, HTMLVideoElement: class {} };
     runInNewContext(state.outputFiles[0].text, context);
@@ -99,7 +115,7 @@ for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.fac
     assert.deepEqual([...allVideos()], [video1]);
     refreshPlayerRoots();
     const reddit = hostname === 'www.reddit.com';
-    assert.equal(scans, reddit ? 3 : 0);
+    assert.equal(scans, reddit ? 204 : 0);
     queries.length = 0;
     for (let frame = 0; frame < 60; frame++)
         assert.deepEqual([...allVideos()], reddit ? [video1, video2, video3] : [video1]);
@@ -108,7 +124,7 @@ for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.fac
         // O cache guarda os roots, não os vídeos: um vídeo novo no root aparece sem refresh.
         innerVideos.push(video4);
         assert.deepEqual([...allVideos()], [video1, video2, video3, video4]);
-        assert.equal(scans, 3);
+        assert.equal(scans, 204);
         innerVideos.pop();
         inner.host.isConnected = false;
         assert.deepEqual([...allVideos()], [video1, video2]);
