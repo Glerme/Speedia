@@ -47,6 +47,8 @@ function videoId(v: HTMLVideoElement) {
     const re = site === 'tiktok' ? /\/video\/(\d+)/ : /(?:\/videos\/|\/reel\/|[?&]v=)(\d+)/;
     // Sobe até o contêiner mais próximo que identifica o vídeo.
     for (let el: Element | null = v; el; el = el.parentElement) {
+        if (el.querySelectorAll('video').length > 1)
+            break;
         const links = el.matches('a[href]') ? [el] : el.querySelectorAll('a[href]');
         for (const link of links) {
             const id = (link.getAttribute('href') || '').match(re)?.[1];

@@ -13,7 +13,7 @@ const media = await build({
     } }],
 });
 class ShadowRoot { constructor(host) { this.host = host; } }
-async function download(site, path, { entries = [], player = null, link = null, src = '' } = {}) {
+async function download(site, path, { entries = [], player = null, link = null, src = '', parent = null } = {}) {
     let message;
     const context = {
         module: { exports: {} }, site, entries: new Map(entries.map((m) => [m.id, m])), ShadowRoot,
@@ -22,8 +22,8 @@ async function download(site, path, { entries = [], player = null, link = null, 
         chrome: { runtime: { async sendMessage(value) { message = value; return { ok: true }; } } },
     };
     const video = {
-        duration: 10, currentSrc: src, parentElement: null,
-        matches: () => false, querySelectorAll: () => link ? [{ getAttribute: () => link }] : [],
+        duration: 10, currentSrc: src, parentElement: parent,
+        matches: () => false, querySelectorAll: (selector) => selector === 'video' ? [] : link ? [{ getAttribute: () => link }] : [],
         closest: () => null, getRootNode: () => player ? new ShadowRoot(player) : {},
     };
     runInNewContext(media.outputFiles[0].text, context);
@@ -48,12 +48,70 @@ assert.equal((await download('reddit', '/', { player })).filename, 'reddit_abc.m
 assert.equal((await download('tiktok', '/', { src: 'https://cdn.exemplo/direto.mp4' })).url, 'https://cdn.exemplo/direto.mp4');
 assert.equal((await download('fb', '/', { entries: [{ id: 'duracao', duration: 10, url: 'https://cdn.exemplo/duracao.mp4' }] })).url, 'https://cdn.exemplo/duracao.mp4');
 
+// O feed contém o link do vizinho antes do post atual; não deve identificá-lo.
+for (const [site, path, neighbor, local, prefix] of [
+    ['tiktok', '/@perfil/video/123', '/@vizinho/video/999', '/@perfil/video/123', 'tiktok'],
+    ['fb', '/videos/123', '/videos/999', '/videos/123', 'facebook'],
+    ['fb', '/watch/?v=123', '/videos/999', '/videos/123', 'facebook'],
+]) {
+    const entries = [
+        { id: 'vizinho', keys: ['999'], url: 'https://cdn.exemplo/vizinho.mp4' },
+        { id: 'atual', keys: ['123'], url: 'https://cdn.exemplo/atual.mp4' },
+    ];
+    const feed = {
+        parentElement: null, matches: () => false,
+        querySelectorAll: (selector) => selector === 'video' ? [{}, {}] : [{ getAttribute: () => neighbor }],
+    };
+    const post = {
+        parentElement: feed, matches: () => false,
+        querySelectorAll: (selector) => selector === 'video' ? [{}] : [],
+    };
+    const result = await download(site, path, { entries, parent: post });
+    assert.equal(result.url, 'https://cdn.exemplo/atual.mp4');
+    assert.equal(result.filename, `${prefix}_123.mp4`);
+    assert.equal(await download(site, '/', { entries, parent: post }), undefined);
+    post.querySelectorAll = (selector) => selector === 'video' ? [{}] : [{ getAttribute: () => local }];
+    assert.equal((await download(site, '/', { entries, parent: post })).url, 'https://cdn.exemplo/atual.mp4');
+}
+
 const state = await build({ entryPoints: ['src/content/state.ts'], bundle: true, write: false, format: 'cjs' });
 const video1 = {}, video2 = {}, video3 = {};
-const root = (videos, hosts = []) => ({ querySelectorAll: (selector) => selector === 'video' ? videos : hosts });
-const document = root([video1], [{ shadowRoot: root([video2], [{ shadowRoot: root([video3]) }]) }]);
-const context = { module: { exports: {} }, document, location: { hostname: 'www.reddit.com' }, HTMLVideoElement: class {} };
-runInNewContext(state.outputFiles[0].text, context);
-assert.equal(context.module.exports.site, 'reddit');
-assert.deepEqual([...context.module.exports.allVideos()], [video1, video2, video3]);
+for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.facebook.com', 'www.reddit.com']) {
+    let scans = 0;
+    const queries = [];
+    const root = (videos, hosts = []) => ({
+        host: { isConnected: true },
+        querySelectorAll(selector) {
+            queries.push(selector);
+            if (selector === '*') scans++;
+            return selector === 'video' ? videos : hosts;
+        },
+    });
+    const inner = root([video3]);
+    const outer = root([video2], [{ shadowRoot: inner }]);
+    const hosts = [{ shadowRoot: outer }];
+    const document = root([video1], hosts);
+    const context = { module: { exports: {} }, document, location: { hostname }, HTMLVideoElement: class {} };
+    runInNewContext(state.outputFiles[0].text, context);
+    const { allVideos, refreshPlayerRoots } = context.module.exports;
+    assert.deepEqual([...allVideos()], [video1]);
+    refreshPlayerRoots();
+    const reddit = hostname === 'www.reddit.com';
+    assert.equal(scans, reddit ? 3 : 0);
+    queries.length = 0;
+    for (let frame = 0; frame < 60; frame++)
+        assert.deepEqual([...allVideos()], reddit ? [video1, video2, video3] : [video1]);
+    assert.deepEqual(queries, Array(60 * (reddit ? 3 : 1)).fill('video'));
+    if (reddit) {
+        inner.host.isConnected = false;
+        assert.deepEqual([...allVideos()], [video1, video2]);
+        hosts.length = 0;
+        refreshPlayerRoots();
+        assert.deepEqual([...allVideos()], [video1]);
+        hosts.push({ shadowRoot: root([video3]) });
+        assert.deepEqual([...allVideos()], [video1]);
+        refreshPlayerRoots();
+        assert.deepEqual([...allVideos()], [video1, video3]);
+    }
+}
 console.log('Multi-site: IDs, nomes, permutações Reddit, fallbacks e shadow roots passaram');

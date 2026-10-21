@@ -8,12 +8,28 @@ export const site: 'ig' | 'x' | 'tiktok' | 'fb' | 'reddit' =
     location.hostname.endsWith('tiktok.com') ? 'tiktok' :
     location.hostname.endsWith('facebook.com') ? 'fb' :
     location.hostname.endsWith('reddit.com') ? 'reddit' : 'x';
-// Inclui players em shadow roots abertos, como o shreddit-player do Reddit.
-export function allVideos(root: Document | ShadowRoot = document): HTMLVideoElement[] {
-    const videos = [...root.querySelectorAll('video')];
-    for (const el of root.querySelectorAll('*'))
-        if (el.shadowRoot)
-            videos.push(...allVideos(el.shadowRoot));
+const playerRoots: ShadowRoot[] = [];
+// Descobre roots só no tick de observação, nunca no loop de renderização.
+export function refreshPlayerRoots() {
+    if (site !== 'reddit')
+        return;
+    playerRoots.length = 0;
+    function discover(root: Document | ShadowRoot) {
+        for (const el of root.querySelectorAll('*')) {
+            if (el.shadowRoot) {
+                playerRoots.push(el.shadowRoot);
+                discover(el.shadowRoot);
+            }
+        }
+    }
+    discover(document);
+}
+export function allVideos(): HTMLVideoElement[] {
+    const videos = [...document.querySelectorAll('video')];
+    if (site === 'reddit')
+        for (const root of playerRoots)
+            if (root.host.isConnected)
+                videos.push(...root.querySelectorAll('video'));
     return videos;
 }
 export const settings = { speed: 1, autoPip: true, tabPip: false, shortcuts: speediaDefaultShortcuts() };

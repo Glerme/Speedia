@@ -1,4 +1,4 @@
-import { allVideos, state, settings, armed, autoPaused, suppressed, t } from './state';
+import { allVideos, refreshPlayerRoots, state, settings, armed, autoPaused, suppressed, t } from './state';
 import { speediaCombo, speediaDefaultShortcuts } from '../shared/shortcuts';
 import { ui, toast, renderSettings, syncHost } from './ui';
 import { applySpeed, setSpeed, stepSpeed } from './speed';
@@ -20,6 +20,7 @@ export function registerEvents() {
     const mediaHandlers: [string, EventListener][] = [];
     const observedRoots = new WeakSet<ShadowRoot>();
     function observePlayers() {
+        refreshPlayerRoots();
         for (const video of allVideos()) {
             const root = video.getRootNode();
             if (!(root instanceof ShadowRoot) || observedRoots.has(root))
