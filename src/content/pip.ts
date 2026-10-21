@@ -1,11 +1,11 @@
-import { state, settings, isIG, armed, autoPaused, suppressed, mutedByUs, t, type PipMode } from './state';
+import { allVideos, state, settings, site, armed, autoPaused, suppressed, mutedByUs, t, type PipMode } from './state';
 import { ui, toast, renderSettings } from './ui';
 import { download } from './media';
 // ---------------------------------------------------------------- mini player / PiP
 export const audible = (v: HTMLVideoElement) => !v.muted && v.volume > 0;
 export const recentInput = () => performance.now() - state.lastInput < 600;
 // Reels e stories trocam de vídeo ao rolar; ali o mini player só atrapalharia.
-export const autoAllowed = () => !(isIG && /^\/(reels?|stories)\//.test(location.pathname));
+export const autoAllowed = () => !(site === 'ig' && /^\/(reels?|stories)\//.test(location.pathname));
 export function vis(v: HTMLVideoElement) {
     const r = v.getBoundingClientRect();
     const w = Math.min(r.right, innerWidth) - Math.max(r.left, 0);
@@ -58,7 +58,7 @@ export function pin(v: HTMLVideoElement, m: PipMode) {
         unpin();
     state.pinned = v;
     state.mode = m;
-    for (const o of document.querySelectorAll('video')) {
+    for (const o of allVideos()) {
         if (o !== v && !o.paused && audible(o))
             muteOther(o);
     }
@@ -123,7 +123,7 @@ export function registerTabPip() {
                     target = state.active;
                 if (!target) {
                     let bestArea = 0;
-                    for (const v of document.querySelectorAll('video')) {
+                    for (const v of allVideos()) {
                         if (v.paused || !audible(v))
                             continue;
                         const { r, area } = vis(v);

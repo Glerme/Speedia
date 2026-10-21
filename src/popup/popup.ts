@@ -195,7 +195,7 @@ interface Settings { autoPip: boolean; tabPip: boolean; shortcuts: Shortcuts; th
     let url = 'chrome://settings/content/autoPictureInPicture';
     try {
       const { protocol, hostname, origin } = new URL(tab?.url ?? '');
-      if (protocol === 'https:' && /(^|\.)(instagram\.com|x\.com|twitter\.com)$/.test(hostname)) {
+      if (protocol === 'https:' && /(^|\.)(instagram\.com|x\.com|twitter\.com|tiktok\.com|facebook\.com|reddit\.com)$/.test(hostname)) {
         url = `chrome://settings/content/siteDetails?site=${encodeURIComponent(origin)}`;
       }
     } catch { /* sem URL (aba especial): página genérica */ }

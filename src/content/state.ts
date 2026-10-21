@@ -3,7 +3,19 @@ import { speediaDefaultShortcuts } from '../shared/shortcuts';
 export const t = speediaMsg as (key: string, ...args: (string | number)[]) => string;
 export const STORE = globalThis.SPEEDIA_EDITION === 'store';
 export const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-export const isIG = location.hostname.endsWith('instagram.com');
+export const site: 'ig' | 'x' | 'tiktok' | 'fb' | 'reddit' =
+    location.hostname.endsWith('instagram.com') ? 'ig' :
+    location.hostname.endsWith('tiktok.com') ? 'tiktok' :
+    location.hostname.endsWith('facebook.com') ? 'fb' :
+    location.hostname.endsWith('reddit.com') ? 'reddit' : 'x';
+// Inclui players em shadow roots abertos, como o shreddit-player do Reddit.
+export function allVideos(root: Document | ShadowRoot = document): HTMLVideoElement[] {
+    const videos = [...root.querySelectorAll('video')];
+    for (const el of root.querySelectorAll('*'))
+        if (el.shadowRoot)
+            videos.push(...allVideos(el.shadowRoot));
+    return videos;
+}
 export const settings = { speed: 1, autoPip: true, tabPip: false, shortcuts: speediaDefaultShortcuts() };
 // O Firefox não expõe a API de Picture-in-Picture para páginas nem extensões.
 export const canPip = 'requestPictureInPicture' in HTMLVideoElement.prototype;

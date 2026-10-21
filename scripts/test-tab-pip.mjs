@@ -8,7 +8,7 @@ const result = await build({
     plugins: [{ name: 'stubs', setup(build) {
         build.onResolve({ filter: /^\.\/(state|ui|media)$/ }, ({ path }) => ({ path, namespace: 'stub' }));
         build.onLoad({ filter: /.*/, namespace: 'stub' }, ({ path }) => ({ contents: path === './state'
-            ? 'export const { state, settings } = globalThis; export const isIG = false, armed = new Set(), autoPaused = new WeakMap(), suppressed = new WeakSet(), mutedByUs = new Set(), t = x => x;'
+            ? 'export const { state, settings } = globalThis; export const allVideos = () => document.querySelectorAll("video"); export const site = "x", armed = new Set(), autoPaused = new WeakMap(), suppressed = new WeakSet(), mutedByUs = new Set(), t = x => x;'
             : path === './ui' ? 'export const ui = {}; export function toast() {} export function renderSettings() {}'
                 : 'export function download() {}' }));
     } }],

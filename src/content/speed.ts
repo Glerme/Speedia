@@ -1,4 +1,4 @@
-import { SPEEDS, settings, t } from './state';
+import { allVideos, SPEEDS, settings, t } from './state';
 import { renderSettings, toast } from './ui';
 // ---------------------------------------------------------------- velocidade
 export function applySpeed(v: HTMLVideoElement) {
@@ -12,7 +12,7 @@ export function applySpeed(v: HTMLVideoElement) {
 export function setSpeed(s: number) {
     settings.speed = s;
     renderSettings();
-    document.querySelectorAll('video').forEach(applySpeed);
+    allVideos().forEach(applySpeed);
 }
 // Sobe ou desce uma fase na lista de velocidades, parando nas pontas.
 export function stepSpeed(dir: number) {
