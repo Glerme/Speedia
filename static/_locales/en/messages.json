@@ -80,8 +80,12 @@
     "description": "Rótulo do interruptor de PiP ao trocar de aba (popup)."
   },
   "popupTabPipHint": {
-    "message": "Opens the video in picture-in-picture when you switch tabs. Chrome only; the browser may ask for permission.",
+    "message": "Opens the video in picture-in-picture when you switch tabs. Chrome only: allow the site with the button below and choose Allow under Automatic picture-in-picture.",
     "description": "Descrição do interruptor de PiP ao trocar de aba (popup)."
+  },
+  "popupAllowSite": {
+    "message": "Allow this site",
+    "description": "Botão que abre as configurações do Chrome para liberar o PiP automático no site da aba ativa (popup)."
   },
   "popupUndo": {
     "message": "Undo",
