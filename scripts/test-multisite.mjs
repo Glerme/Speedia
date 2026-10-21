@@ -52,6 +52,7 @@ assert.equal((await download('fb', '/', { entries: [{ id: 'duracao', duration: 1
 for (const [site, path, neighbor, local, prefix] of [
     ['tiktok', '/@perfil/video/123', '/@vizinho/video/999', '/@perfil/video/123', 'tiktok'],
     ['fb', '/videos/123', '/videos/999', '/videos/123', 'facebook'],
+    ['fb', '/reel/123', '/videos/999', '/videos/123', 'facebook'],
     ['fb', '/watch/?v=123', '/videos/999', '/videos/123', 'facebook'],
 ]) {
     const entries = [
@@ -75,7 +76,7 @@ for (const [site, path, neighbor, local, prefix] of [
 }
 
 const state = await build({ entryPoints: ['src/content/state.ts'], bundle: true, write: false, format: 'cjs' });
-const video1 = {}, video2 = {}, video3 = {};
+const video1 = {}, video2 = {}, video3 = {}, video4 = {};
 for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.facebook.com', 'www.reddit.com']) {
     let scans = 0;
     const queries = [];
@@ -87,7 +88,8 @@ for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.fac
             return selector === 'video' ? videos : hosts;
         },
     });
-    const inner = root([video3]);
+    const innerVideos = [video3];
+    const inner = root(innerVideos);
     const outer = root([video2], [{ shadowRoot: inner }]);
     const hosts = [{ shadowRoot: outer }];
     const document = root([video1], hosts);
@@ -103,6 +105,11 @@ for (const hostname of ['www.instagram.com', 'x.com', 'www.tiktok.com', 'www.fac
         assert.deepEqual([...allVideos()], reddit ? [video1, video2, video3] : [video1]);
     assert.deepEqual(queries, Array(60 * (reddit ? 3 : 1)).fill('video'));
     if (reddit) {
+        // O cache guarda os roots, não os vídeos: um vídeo novo no root aparece sem refresh.
+        innerVideos.push(video4);
+        assert.deepEqual([...allVideos()], [video1, video2, video3, video4]);
+        assert.equal(scans, 3);
+        innerVideos.pop();
         inner.host.isConnected = false;
         assert.deepEqual([...allVideos()], [video1, video2]);
         hosts.length = 0;
