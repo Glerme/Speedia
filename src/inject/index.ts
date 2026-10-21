@@ -28,6 +28,7 @@ interface MediaNode {
   browser_native_sd_url?: string;
   playable_url_quality_hd?: string;
   playable_url?: string;
+  videoDeliveryLegacyFields?: MediaNode;
   playable_duration_in_ms?: number;
   length_in_second?: number;
 }
@@ -42,6 +43,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
   'use strict';
 
   const STORE = globalThis.SPEEDIA_EDITION === 'store';
+  const FACEBOOK_URL_FIELDS = ['browser_native_hd_url', 'playable_url_quality_hd', 'browser_native_sd_url', 'playable_url'] as const;
 
   const pathKey = (u: string): string | null => {
     try {
@@ -129,7 +131,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
 
   function fromFacebook(o: MediaNode, out: MediaRecord[]): void {
     if ((typeof o.id !== 'string' && typeof o.id !== 'number') || !String(o.id)) return;
-    const url = [o.browser_native_hd_url, o.playable_url_quality_hd, o.browser_native_sd_url, o.playable_url].find(httpsUrl);
+    const url = FACEBOOK_URL_FIELDS.flatMap((field) => [o[field], o.videoDeliveryLegacyFields?.[field]]).find(httpsUrl);
     if (!url) return;
     const duration = typeof o.playable_duration_in_ms === 'number'
       ? o.playable_duration_in_ms / 1000 : o.length_in_second;
@@ -160,7 +162,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
       if (node.video_info) fromTwitter(node as MediaNode, out);
       if (node.video_versions || node.video_url) fromInstagram(node as MediaNode, code, out);
       if (node.video) fromTikTok(node as MediaNode, out);
-      if (node.browser_native_hd_url || node.browser_native_sd_url || node.playable_url_quality_hd || node.playable_url) {
+      if (node.videoDeliveryLegacyFields || FACEBOOK_URL_FIELDS.some((field) => node[field])) {
         fromFacebook(node as MediaNode, out);
       }
 
@@ -188,7 +190,7 @@ type SpeediaXhr = XMLHttpRequest & { __speediaUrl?: string };
     }
   }
 
-  const interesting = (url: string | undefined): boolean => /graphql|\/api\/|\/api\?/.test(url || '');
+  const interesting = (url: string | undefined): boolean => /graphql|\/api\//.test(url || '');
 
   const origFetch = STORE ? null : window.fetch;
   if (origFetch) {
