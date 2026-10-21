@@ -4,7 +4,7 @@ export const t = speediaMsg as (key: string, ...args: (string | number)[]) => st
 export const STORE = globalThis.SPEEDIA_EDITION === 'store';
 export const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 export const isIG = location.hostname.endsWith('instagram.com');
-export const settings = { speed: 1, autoPip: true, shortcuts: speediaDefaultShortcuts() };
+export const settings = { speed: 1, autoPip: true, tabPip: false, shortcuts: speediaDefaultShortcuts() };
 // O Firefox não expõe a API de Picture-in-Picture para páginas nem extensões.
 export const canPip = 'requestPictureInPicture' in HTMLVideoElement.prototype;
 export type PipMode = 'mini' | 'native';
