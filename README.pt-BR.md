@@ -5,7 +5,7 @@
 <h1 align="center">Speedia</h1>
 
 <p align="center">
-  Controle de velocidade, mini player e download de vídeos no Instagram e no X (Twitter).
+  Controle de velocidade, mini player e download de vídeos no Instagram, X (Twitter), TikTok, Facebook e Reddit.
 </p>
 
 <p align="center">
@@ -27,13 +27,14 @@
 - Auto PiP: um mini player aparece ao rolar a página além de um vídeo que está tocando com som.
 - PiP ao trocar de aba (opcional, só no Chrome): o vídeo que está tocando abre em Picture-in-Picture quando você muda de aba. O Chrome também exige liberar o site uma vez, pelo botão "Liberar este site" do popup.
 - Download de vídeos.
+- Funciona no Instagram, X/Twitter, TikTok, Facebook e Reddit, sempre ativo, com a mesma barra em todos os sites.
 - Atalhos de teclado configuráveis.
 - Tema claro, escuro ou automático, com cor principal personalizável.
 - A barra continua visível em tela cheia no X.
 - Página de boas-vindas na instalação.
 - Português (BR) e inglês.
 
-Funciona no Instagram e no X/Twitter. Requer Chrome 121+ ou Firefox 128+.
+Funciona no Instagram, X/Twitter, TikTok, Facebook e Reddit. Requer Chrome 121+ ou Firefox 128+.
 
 ## Instalação
 
@@ -42,7 +43,7 @@ Funciona no Instagram e no X/Twitter. Requer Chrome 121+ ou Firefox 128+.
 1. Baixe `speedia-vX.zip` na [última release](https://github.com/Glerme/Speedia/releases/latest) e extraia.
 2. Abra `chrome://extensions` e ative o **Modo do desenvolvedor**.
 3. Clique em **Carregar sem compactação** e escolha a pasta `speedia` extraída.
-4. Recarregue as abas do Instagram e do X que já estiverem abertas.
+4. Recarregue as abas do Instagram, X, TikTok, Facebook e Reddit que já estiverem abertas.
 
 ### Firefox
 
@@ -57,7 +58,7 @@ Gere qualquer uma com `scripts/build.sh <full|store> <outdir>` (ex.: `scripts/bu
 
 ## Uso
 
-Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com as velocidades (0.5x a 3x) e os botões de som, PiP, Auto PiP e download.
+Abra um vídeo no Instagram, X, TikTok, Facebook ou Reddit. A barra do Speedia aparece sobre ele, com as velocidades (0.5x a 3x) e os botões de som, PiP, Auto PiP e download.
 
 <p align="center">
   <img src="docs/media/overlay.png" alt="Barra do Speedia sobre um vídeo, com as velocidades e os botões de som, PiP, Auto PiP e download" width="480">
@@ -69,8 +70,8 @@ Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com a
     <img src="docs/media/mini-player.gif" alt="Vídeo continuando a tocar em um mini player depois de rolar a página" width="480">
   </p>
 
-- **PiP ao trocar de aba** (só no Chrome): ao mudar de aba, o vídeo que está tocando com som abre em Picture-in-Picture. O Chrome bloqueia isso até você liberar o site, e só você pode fazer isso (extensões não têm acesso a essa permissão). Faça uma vez em cada site (Instagram e X):
-  1. Abra o Instagram ou o X e clique no ícone do Speedia para abrir o popup.
+- **PiP ao trocar de aba** (só no Chrome): ao mudar de aba, o vídeo que está tocando com som abre em Picture-in-Picture. O Chrome bloqueia isso até você liberar o site, e só você pode fazer isso (extensões não têm acesso a essa permissão). Faça uma vez em cada site (Instagram, X, TikTok, Facebook e Reddit):
+  1. Abra o Instagram, X, TikTok, Facebook ou Reddit e clique no ícone do Speedia para abrir o popup.
   2. Na seção Mini player, ligue **PiP ao trocar de aba**.
   3. Clique em **Liberar este site**. Abre a página de configurações do Chrome daquele site.
   4. Procure a opção **Picture-in-picture automático** e mude para **Permitir**.
@@ -79,7 +80,7 @@ Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com a
 
   5. Volte para a aba do site e recarregue a página. Toque um vídeo com som e troque de aba.
 
-  Se preferir fazer pelo menu: `chrome://settings/content/autoPictureInPicture` > Permitido entrar no modo picture-in-picture automaticamente > Adicionar > `https://www.instagram.com` (ou `https://x.com`).
+  Se preferir fazer pelo menu: `chrome://settings/content/autoPictureInPicture` > Permitido entrar no modo picture-in-picture automaticamente > Adicionar > `https://www.instagram.com` (ou `https://x.com`, `https://www.tiktok.com`, `https://www.facebook.com`, `https://www.reddit.com`).
 
 - **Download:** o botão de download salva o vídeo como arquivo `.mp4`.
 - **Tela cheia:** a barra continua visível em tela cheia no X. Aperte `F` para alternar a tela cheia.
