@@ -69,7 +69,17 @@ Open a video on Instagram or X. The Speedia bar appears over it with the speed o
     <img src="docs/media/mini-player.gif" alt="Video continuing to play in a mini player after scrolling past it" width="480">
   </p>
 
-- **PiP on tab switch:** turn it on in the popup, under Mini player. When you switch tabs, the playing video opens in Picture-in-Picture. Chrome only; then click "Allow this site" (opens the site's Chrome settings) and set Automatic picture-in-picture to Allow.
+- **PiP on tab switch** (Chrome only): when you switch tabs, the video playing with sound opens in Picture-in-Picture. Chrome blocks this until you allow the site, and only you can do that (extensions can't change this permission). Do it once for each site (Instagram and X):
+  1. Open Instagram or X and click the Speedia icon to open the popup.
+  2. Under Mini player, turn on **PiP on tab switch**.
+  3. Click **Allow this site**. Chrome's settings page for that site opens.
+  4. Find **Automatic picture-in-picture** and set it to **Allow**.
+
+     <img src="docs/media/auto-pip-permission.png" alt="Automatic picture-in-picture option set to Allow in Chrome's site settings" width="480">
+
+  5. Go back to the site's tab and reload it. Play a video with sound and switch tabs.
+
+  Or from Chrome's menu: `chrome://settings/content/autoPictureInPicture` > Allowed to enter picture-in-picture automatically > Add > `https://www.instagram.com` (or `https://x.com`).
 
 - **Download:** the download button saves the video as an `.mp4` file.
 - **Fullscreen:** the bar stays visible in fullscreen on X. Press `F` to toggle fullscreen.

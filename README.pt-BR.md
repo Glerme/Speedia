@@ -69,7 +69,17 @@ Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com a
     <img src="docs/media/mini-player.gif" alt="Vídeo continuando a tocar em um mini player depois de rolar a página" width="480">
   </p>
 
-- **PiP ao trocar de aba:** ligue no popup, na seção Mini player. Ao mudar de aba, o vídeo que está tocando abre em Picture-in-Picture. Só no Chrome; depois clique em "Liberar este site" (abre as configurações do site no Chrome) e mude Picture-in-picture automático para Permitir.
+- **PiP ao trocar de aba** (só no Chrome): ao mudar de aba, o vídeo que está tocando com som abre em Picture-in-Picture. O Chrome bloqueia isso até você liberar o site, e só você pode fazer isso (extensões não têm acesso a essa permissão). Faça uma vez em cada site (Instagram e X):
+  1. Abra o Instagram ou o X e clique no ícone do Speedia para abrir o popup.
+  2. Na seção Mini player, ligue **PiP ao trocar de aba**.
+  3. Clique em **Liberar este site**. Abre a página de configurações do Chrome daquele site.
+  4. Procure a opção **Picture-in-picture automático** e mude para **Permitir**.
+
+     <img src="docs/media/auto-pip-permission.png" alt="Opção Picture-in-picture automático marcada como Permitir nas configurações do site no Chrome" width="480">
+
+  5. Volte para a aba do site e recarregue a página. Toque um vídeo com som e troque de aba.
+
+  Se preferir fazer pelo menu: `chrome://settings/content/autoPictureInPicture` > Permitido entrar no modo picture-in-picture automaticamente > Adicionar > `https://www.instagram.com` (ou `https://x.com`).
 
 - **Download:** o botão de download salva o vídeo como arquivo `.mp4`.
 - **Tela cheia:** a barra continua visível em tela cheia no X. Aperte `F` para alternar a tela cheia.

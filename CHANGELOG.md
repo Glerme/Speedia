@@ -13,6 +13,7 @@ tiver uma seção aqui; o texto dela vira as notas da release.
   podem alterar essa permissão. Usa a nova permissão `activeTab` (sem aviso na instalação); fica
   oculto no Firefox.
 - `npm test` roda o autoteste da nova opção (`scripts/test-tab-pip.mjs`).
+- README com o passo a passo para liberar o PiP automático no Chrome.
 
 ## 1.4.3 — 2026-10-15
 
