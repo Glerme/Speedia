@@ -1,4 +1,4 @@
-import { state, settings, armed, autoPaused, suppressed, t } from './state';
+import { allVideos, refreshPlayerRoots, state, settings, armed, autoPaused, suppressed, t } from './state';
 import { speediaCombo, speediaDefaultShortcuts } from '../shared/shortcuts';
 import { ui, toast, renderSettings, syncHost } from './ui';
 import { applySpeed, setSpeed, stepSpeed } from './speed';
@@ -16,11 +16,29 @@ export function registerEvents() {
     }, { capture: true, passive: true });
     window.addEventListener('scroll', schedule, { capture: true, passive: true });
     window.addEventListener('resize', schedule, { passive: true });
-    setInterval(schedule, 1000);
-    const on = (type: string, fn: (video: HTMLVideoElement) => void) => document.addEventListener(type, (e) => {
-        if (e.target instanceof HTMLVideoElement)
-            fn(e.target);
-    }, true);
+    // Eventos de mídia não atravessam shadow roots; registra também nesses roots.
+    const mediaHandlers: [string, EventListener][] = [];
+    const observedRoots = new WeakSet<ShadowRoot>();
+    function observePlayers() {
+        refreshPlayerRoots();
+        for (const video of allVideos()) {
+            const root = video.getRootNode();
+            if (!(root instanceof ShadowRoot) || observedRoots.has(root))
+                continue;
+            observedRoots.add(root);
+            for (const [type, handler] of mediaHandlers)
+                root.addEventListener(type, handler, true);
+        }
+    }
+    setInterval(() => { observePlayers(); schedule(); }, 1000);
+    const on = (type: string, fn: (video: HTMLVideoElement) => void) => {
+        const handler: EventListener = (e) => {
+            if (e.target instanceof HTMLVideoElement)
+                fn(e.target);
+        };
+        mediaHandlers.push([type, handler]);
+        document.addEventListener(type, handler, true);
+    };
     // Outro vídeo ganhou som enquanto há um preso: se foi o usuário, troca; senão, silencia.
     function onOtherAudible(v: HTMLVideoElement) {
         if (!state.pinned || v === state.pinned || v.paused || !audible(v))
@@ -76,6 +94,7 @@ export function registerEvents() {
         }
         schedule();
     });
+    observePlayers();
     // Atalhos de teclado (editáveis no popup). Tela cheia: vídeo com som (o preso, senão o da barra, senão o mais visível).
     function fullscreenTarget() {
         const ok = (v: HTMLVideoElement | null) => v && v.isConnected && audible(v);
@@ -85,7 +104,7 @@ export function registerEvents() {
             return state.active;
         let best = null;
         let bestArea = 0;
-        for (const v of document.querySelectorAll('video')) {
+        for (const v of allVideos()) {
             if (v.paused || !audible(v))
                 continue;
             const { r, area } = vis(v);

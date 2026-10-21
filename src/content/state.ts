@@ -3,7 +3,36 @@ import { speediaDefaultShortcuts } from '../shared/shortcuts';
 export const t = speediaMsg as (key: string, ...args: (string | number)[]) => string;
 export const STORE = globalThis.SPEEDIA_EDITION === 'store';
 export const SPEEDS = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-export const isIG = location.hostname.endsWith('instagram.com');
+export const site: 'ig' | 'x' | 'tiktok' | 'fb' | 'reddit' =
+    location.hostname.endsWith('instagram.com') ? 'ig' :
+    location.hostname.endsWith('tiktok.com') ? 'tiktok' :
+    location.hostname.endsWith('facebook.com') ? 'fb' :
+    location.hostname.endsWith('reddit.com') ? 'reddit' : 'x';
+const playerRoots: ShadowRoot[] = [];
+// Descobre roots só no tick de observação, nunca no loop de renderização.
+export function refreshPlayerRoots() {
+    if (site !== 'reddit')
+        return;
+    playerRoots.length = 0;
+    function discover(root: Document | ShadowRoot) {
+        for (const el of root.querySelectorAll('*')) {
+            if (el.shadowRoot) {
+                if (el.shadowRoot.querySelectorAll('video').length)
+                    playerRoots.push(el.shadowRoot);
+                discover(el.shadowRoot);
+            }
+        }
+    }
+    discover(document);
+}
+export function allVideos(): HTMLVideoElement[] {
+    const videos = [...document.querySelectorAll('video')];
+    if (site === 'reddit')
+        for (const root of playerRoots)
+            if (root.host.isConnected)
+                videos.push(...root.querySelectorAll('video'));
+    return videos;
+}
 export const settings = { speed: 1, autoPip: true, tabPip: false, shortcuts: speediaDefaultShortcuts() };
 // O Firefox não expõe a API de Picture-in-Picture para páginas nem extensões.
 export const canPip = 'requestPictureInPicture' in HTMLVideoElement.prototype;

@@ -1,4 +1,4 @@
-import { state, isIG, settings, armed, autoPaused, suppressed, t } from './state';
+import { allVideos, state, site, settings, armed, autoPaused, suppressed, t } from './state';
 import { ui, SEEK_H, setPressed, muteText, seekTick, syncHost } from './ui';
 import { audible, vis, covered, autoAllowed, pin, unpin } from './pip';
 // ---------------------------------------------------------------- laço de atualização
@@ -106,7 +106,7 @@ function update() {
     let best = null;
     let bestRect = null;
     let bestScore = 0;
-    for (const v of document.querySelectorAll('video')) {
+    for (const v of allVideos()) {
         const { r, area: vArea, ratio } = vis(v);
         if (r.width < 120 || r.height < 80)
             continue;
@@ -137,8 +137,8 @@ function update() {
     state.active = best;
     const onScreen = best !== null && bestRect !== null && bestRect.bottom > 48 && bestRect.top < innerHeight - 48;
     if (onScreen && best && bestRect) {
-        const inFeed = !fs && isIG && !!best.closest('article');
-        const wantSide = !fs && isIG && !inFeed && /^\/reels?\//.test(location.pathname);
+        const inFeed = !fs && site === 'ig' && !!best.closest('article');
+        const wantSide = !fs && site === 'ig' && !inFeed && /^\/reels?\//.test(location.pathname);
         let x = Math.max(bestRect.left, 0) + 8;
         // No feed do Instagram o topo do vídeo é coberto pelo avatar e nome do perfil.
         let y = Math.max(bestRect.top + (inFeed ? 60 : 8), 8);
@@ -189,7 +189,7 @@ function update() {
         ui.bar.hidden = true;
     }
     // Durante o arraste a barra fica presa ao vídeo em que o arraste começou.
-    if (isIG && !state.dragging) {
+    if (site === 'ig' && !state.dragging) {
         if (onScreen && best && bestRect && isFinite(best.duration) && best.duration > 0) {
             state.seekVideo = best;
             let y = Math.min(bestRect.bottom, innerHeight) - SEEK_H;

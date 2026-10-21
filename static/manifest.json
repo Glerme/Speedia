@@ -40,7 +40,10 @@
       "matches": [
         "*://*.instagram.com/*",
         "*://*.x.com/*",
-        "*://*.twitter.com/*"
+        "*://*.twitter.com/*",
+        "*://*.tiktok.com/*",
+        "*://*.facebook.com/*",
+        "*://*.reddit.com/*"
       ],
       "js": [
         "edition.js",
@@ -53,7 +56,10 @@
       "matches": [
         "*://*.instagram.com/*",
         "*://*.x.com/*",
-        "*://*.twitter.com/*"
+        "*://*.twitter.com/*",
+        "*://*.tiktok.com/*",
+        "*://*.facebook.com/*",
+        "*://*.reddit.com/*"
       ],
       "js": [
         "edition.js",
