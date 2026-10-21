@@ -3,7 +3,7 @@
 Cada versão tem uma seção `## <versão> — <data>`. A release só é publicada se a versão da tag
 tiver uma seção aqui; o texto dela vira as notas da release.
 
-## 1.7.0 — 2026-10-21
+## 1.7.1 — 2026-10-21
 
 - Aviso de nova versão na edição completa no Chrome (zip do GitHub, que não se atualiza sozinha):
   uma vez por dia o background consulta a última release na API do GitHub; havendo versão nova, o
