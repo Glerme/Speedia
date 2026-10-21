@@ -2,7 +2,7 @@ import { state, settings, armed, autoPaused, suppressed, t } from './state';
 import { speediaCombo, speediaDefaultShortcuts } from '../shared/shortcuts';
 import { ui, toast, renderSettings, syncHost } from './ui';
 import { applySpeed, setSpeed, stepSpeed } from './speed';
-import { audible, recentInput, dismiss, muteOther, sizeMini, unpin, pin, vis, covered, toggleMute } from './pip';
+import { audible, recentInput, dismiss, muteOther, sizeMini, unpin, pin, vis, covered, toggleMute, registerTabPip } from './pip';
 import { schedule } from './loop';
 export function registerEvents() {
     // ---------------------------------------------------------------- eventos
@@ -184,7 +184,7 @@ export function registerEvents() {
         ui.host.dataset.theme = appearance.theme === 'light' || (appearance.theme !== 'dark' && !darkQuery.matches) ? 'light' : 'dark';
     }
     darkQuery.addEventListener('change', applyAppearance);
-    chrome.storage.sync.get({ autoPip: true, shortcuts: {}, theme: 'auto', accent: DEFAULT_ACCENT }).then((s) => {
+    chrome.storage.sync.get({ autoPip: true, tabPip: false, shortcuts: {}, theme: 'auto', accent: DEFAULT_ACCENT }).then((s) => {
         if (typeof s.theme === 'string')
             appearance.theme = s.theme;
         if (typeof s.accent === 'string')
@@ -192,10 +192,18 @@ export function registerEvents() {
         applyAppearance();
         if (typeof s.autoPip === 'boolean')
             settings.autoPip = s.autoPip;
+        if (typeof s.tabPip === 'boolean')
+            settings.tabPip = s.tabPip;
+        registerTabPip();
         settings.shortcuts = withDefaults(s.shortcuts);
         renderSettings();
     });
     chrome.storage.onChanged.addListener((changes) => {
+        if (changes.tabPip) {
+            if (typeof changes.tabPip.newValue === 'boolean')
+                settings.tabPip = changes.tabPip.newValue;
+            registerTabPip();
+        }
         if (changes.autoPip) {
             if (typeof changes.autoPip.newValue === 'boolean')
                 settings.autoPip = changes.autoPip.newValue;

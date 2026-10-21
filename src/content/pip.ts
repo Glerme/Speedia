@@ -113,6 +113,34 @@ export async function togglePip(v: HTMLVideoElement) {
         toast(t('toastPipFail', e instanceof Error ? e.message : String(e)));
     }
 }
+export function registerTabPip() {
+    try {
+        // A ação de auto-PiP do Chrome ainda não consta no lib.dom do TypeScript.
+        navigator.mediaSession.setActionHandler('enterpictureinpicture' as MediaSessionAction, settings.tabPip ? () => {
+            try {
+                let target = state.pinned?.isConnected ? state.pinned : null;
+                if (!target && state.active?.isConnected && !state.active.paused && audible(state.active))
+                    target = state.active;
+                if (!target) {
+                    let bestArea = 0;
+                    for (const v of document.querySelectorAll('video')) {
+                        if (v.paused || !audible(v))
+                            continue;
+                        const { r, area } = vis(v);
+                        if (area > bestArea && !covered(v, r)) {
+                            bestArea = area;
+                            target = v;
+                        }
+                    }
+                }
+                if (target && document.pictureInPictureElement !== target)
+                    void togglePip(target);
+            }
+            catch { }
+        } : null);
+    }
+    catch { }
+}
 export function toggleMute(v: HTMLVideoElement) {
     const unmute = !audible(v);
     v.muted = !unmute;
