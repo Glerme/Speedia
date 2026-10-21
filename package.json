@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
-    "test": "node scripts/test-tab-pip.mjs",
+    "test": "node scripts/test-tab-pip.mjs && node scripts/test-media-sites.mjs && node scripts/test-inject-sites.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
