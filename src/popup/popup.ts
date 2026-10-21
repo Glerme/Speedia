@@ -188,6 +188,19 @@ interface Settings { autoPip: boolean; tabPip: boolean; shortcuts: Shortcuts; th
 
   autoPip.onchange = () => chrome.storage.sync.set({ autoPip: autoPip.checked }).catch(() => {});
   tabPip.onchange = () => chrome.storage.sync.set({ tabPip: tabPip.checked }).catch(() => {});
+  // Chrome só libera "Picture-in-picture automático" pelas configurações do site; extensão não altera essa permissão.
+  if (!('requestPictureInPicture' in HTMLVideoElement.prototype)) byId('allowSiteItem').style.display = 'none';
+  byId('allowSite').onclick = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    let url = 'chrome://settings/content/autoPictureInPicture';
+    try {
+      const { protocol, hostname, origin } = new URL(tab?.url ?? '');
+      if (protocol === 'https:' && /(^|\.)(instagram\.com|x\.com|twitter\.com)$/.test(hostname)) {
+        url = `chrome://settings/content/siteDetails?site=${encodeURIComponent(origin)}`;
+      }
+    } catch { /* sem URL (aba especial): página genérica */ }
+    chrome.tabs.create({ url }).catch(() => {});
+  };
   $reset.onclick = () => {
     recording = null;
     undoSnapshot = snapshot();

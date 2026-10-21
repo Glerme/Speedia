@@ -25,7 +25,7 @@
 - Velocidade de 0.5x a 3x, em uma barra de vidro sobre o vídeo.
 - Botões de som e Picture-in-Picture na mesma barra.
 - Auto PiP: um mini player aparece ao rolar a página além de um vídeo que está tocando com som.
-- PiP ao trocar de aba (opcional, só no Chrome): o vídeo que está tocando abre em Picture-in-Picture quando você muda de aba.
+- PiP ao trocar de aba (opcional, só no Chrome): o vídeo que está tocando abre em Picture-in-Picture quando você muda de aba. O Chrome também exige liberar o site uma vez, pelo botão "Liberar este site" do popup.
 - Download de vídeos.
 - Atalhos de teclado configuráveis.
 - Tema claro, escuro ou automático, com cor principal personalizável.
@@ -69,7 +69,7 @@ Abra um vídeo no Instagram ou no X. A barra do Speedia aparece sobre ele, com a
     <img src="docs/media/mini-player.gif" alt="Vídeo continuando a tocar em um mini player depois de rolar a página" width="480">
   </p>
 
-- **PiP ao trocar de aba:** ligue no popup, na seção Mini player. Ao mudar de aba, o vídeo que está tocando abre em Picture-in-Picture. Só no Chrome; o navegador pode pedir permissão na primeira vez.
+- **PiP ao trocar de aba:** ligue no popup, na seção Mini player. Ao mudar de aba, o vídeo que está tocando abre em Picture-in-Picture. Só no Chrome; depois clique em "Liberar este site" (abre as configurações do site no Chrome) e mude Picture-in-picture automático para Permitir.
 
 - **Download:** o botão de download salva o vídeo como arquivo `.mp4`.
 - **Tela cheia:** a barra continua visível em tela cheia no X. Aperte `F` para alternar a tela cheia.

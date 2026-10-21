@@ -26,6 +26,7 @@ Each entry point in `build.mjs` becomes an IIFE bundle in `dist/`; `static/` (ma
 
 ### Cross-cutting contracts
 
+- **Tab-switch PiP needs a Chrome site permission** (Automatic picture-in-picture) that extensions cannot set; the popup's "Allow this site" button (`allowSite` in `popup.ts`, hidden without PiP support) opens `chrome://settings/content/siteDetails?site=<origin>` (IG/X only, https) or the generic `autoPictureInPicture` page via `chrome.tabs.create`, using the `activeTab` permission to read the active tab URL.
 - **Settings** live in `chrome.storage.sync`: `autoPip`, `tabPip` (PiP on tab switch, default `false`), `shortcuts`, `theme` (`auto|light|dark`), `accent`. Content script, popup and welcome page each read them and listen to `storage.onChanged`, so changing a key's shape means updating all three.
 - **Editions**: `static/edition.js` sets `globalThis.SPEEDIA_EDITION = 'full'`; `scripts/build.sh store` overwrites it with `'store'`, drops the `downloads` permission and swaps the description. Every download-related path (inject capture, content download button, background listener, welcome feature item) checks `SPEEDIA_EDITION === 'store'` — new download features must too. `edition.js` is loaded before each bundle via the manifest / HTML `<script>` tags.
 - **i18n**: all user-facing strings go through `_locales/{en,pt_BR}/messages.json`; add keys to both.

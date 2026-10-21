@@ -24,6 +24,7 @@
   },
   "minimum_chrome_version": "121",
   "permissions": [
+    "activeTab",
     "downloads",
     "storage"
   ],

@@ -7,7 +7,11 @@ tiver uma seção aqui; o texto dela vira as notas da release.
 
 - Nova opção "PiP ao trocar de aba" na seção Mini player do popup (desligada por padrão): ao
   mudar de aba, o vídeo que está tocando abre sozinho em Picture-in-Picture. Só no Chrome, usando o
-  PiP automático do navegador, que pode pedir permissão na primeira vez.
+  PiP automático do navegador.
+- Botão "Liberar este site" abaixo da opção: abre as configurações do Chrome do site da aba ativa
+  (Instagram/X) ou a página genérica de PiP automático, onde basta escolher Permitir. Extensões não
+  podem alterar essa permissão. Usa a nova permissão `activeTab` (sem aviso na instalação); fica
+  oculto no Firefox.
 - `npm test` roda o autoteste da nova opção (`scripts/test-tab-pip.mjs`).
 
 ## 1.4.3 — 2026-10-15
