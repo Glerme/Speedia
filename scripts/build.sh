@@ -21,7 +21,7 @@ case "$edition" in
     pack "$out/speedia-store"
     echo "globalThis.SPEEDIA_EDITION = 'store';" > "$out/speedia-store/edition.js"
     m="$out/speedia-store/manifest.json"
-    jq '.permissions -= ["downloads"] | .description = "__MSG_extDescriptionStore__"' "$m" > "$m.tmp" && mv "$m.tmp" "$m"
+    jq '.permissions -= ["downloads", "alarms"] | .description = "__MSG_extDescriptionStore__"' "$m" > "$m.tmp" && mv "$m.tmp" "$m"
     cp -r "$out/speedia-store" "$out/speedia-store-firefox"
     # browser_specific_settings é só do Firefox: sai do pacote Chrome.
     jq 'del(.browser_specific_settings)' "$m" > "$m.tmp" && mv "$m.tmp" "$m"

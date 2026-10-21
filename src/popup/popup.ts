@@ -1,6 +1,7 @@
 import { SPEEDIA_DEFAULT_ACCENT, speediaApplyLook, speediaCacheLook, speediaCachedLook, speediaOn, speediaValidAccent, speediaValidTheme, type SpeediaTheme } from './theme';
 import { speediaApplyI18n, speediaMsg } from '../shared/i18n';
 import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty } from '../shared/shortcuts';
+import { speediaPendingUpdate } from '../shared/update';
 
 type Shortcuts = Record<string, string>;
 // Objeto guardado em chrome.storage.sync.
@@ -40,6 +41,15 @@ interface Settings { autoPip: boolean; tabPip: boolean; shortcuts: Shortcuts; th
 
   speediaApplyI18n();
   byId('version').textContent = 'v' + chrome.runtime.getManifest().version;
+  // Gravado pelo background só na edição completa no Chrome; nas demais fica vazio.
+  chrome.storage.local.get('update').then((s) => {
+    const update = speediaPendingUpdate(s.update);
+    if (!update) return;
+    const link = byId<HTMLAnchorElement>('update');
+    link.textContent = speediaMsg('popupUpdateAvailable', update.version);
+    link.href = update.url;
+    link.hidden = false;
+  }).catch(() => {});
 
   function h<K extends keyof HTMLElementTagNameMap>(tag: K, props?: Partial<HTMLElementTagNameMap[K]>, ...children: (Node | string)[]): HTMLElementTagNameMap[K] {
     const el = document.createElement(tag);

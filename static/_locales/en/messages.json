@@ -4,11 +4,11 @@
     "description": "Nome da extensão (marca; igual nos dois idiomas)."
   },
   "extDescription": {
-    "message": "Video speed control, scroll-triggered mini player/PiP and video downloads on Instagram and X/Twitter.",
+    "message": "Video speed control, scroll-triggered mini player/PiP and video downloads on Instagram, X, TikTok, Facebook and Reddit.",
     "description": "Descrição da extensão nas lojas (máx. 132 caracteres)."
   },
   "extDescriptionStore": {
-    "message": "Video speed control and scroll-triggered mini player/PiP on Instagram and X/Twitter.",
+    "message": "Video speed control and scroll-triggered mini player/PiP on Instagram, X, TikTok, Facebook and Reddit.",
     "description": "Descrição da extensão nas lojas, sem menção a download (máx. 132 caracteres)."
   },
   "actionTitle": {
@@ -398,5 +398,9 @@
   "popupThemeLabel": {
     "message": "Theme",
     "description": "Rótulo visível do grupo de tema (Automático/Claro/Escuro)."
+  },
+  "popupUpdateAvailable": {
+    "message": "Version $1 available. Download it on GitHub",
+    "description": "Aviso no popup de que há versão nova no GitHub (edição completa no Chrome). $1 = versão."
   }
 }

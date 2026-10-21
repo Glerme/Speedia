@@ -4,11 +4,11 @@
     "description": "Nome da extensão (marca; igual nos dois idiomas)."
   },
   "extDescription": {
-    "message": "Controle de velocidade, mini player/PiP ao rolar e download de vídeos no Instagram e no X/Twitter.",
+    "message": "Controle de velocidade, mini player/PiP ao rolar e download de vídeos no Instagram, X, TikTok, Facebook e Reddit.",
     "description": "Descrição da extensão nas lojas (máx. 132 caracteres)."
   },
   "extDescriptionStore": {
-    "message": "Controle de velocidade e mini player/PiP ao rolar no Instagram e no X/Twitter.",
+    "message": "Controle de velocidade e mini player/PiP ao rolar no Instagram, X, TikTok, Facebook e Reddit.",
     "description": "Descrição da extensão nas lojas, sem menção a download (máx. 132 caracteres)."
   },
   "actionTitle": {
@@ -398,5 +398,9 @@
   "popupThemeLabel": {
     "message": "Tema",
     "description": "Rótulo visível do grupo de tema (Automático/Claro/Escuro)."
+  },
+  "popupUpdateAvailable": {
+    "message": "Versão $1 disponível. Baixe no GitHub",
+    "description": "Aviso no popup de que há versão nova no GitHub (edição completa no Chrome). $1 = versão."
   }
 }

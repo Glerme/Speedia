@@ -32,6 +32,7 @@
 - Tema claro, escuro ou automático, com cor principal personalizável.
 - A barra continua visível em tela cheia no X.
 - Página de boas-vindas na instalação.
+- Aviso de nova versão (Chrome, zip do GitHub): o ícone mostra o selo NEW e o popup leva à release.
 - Português (BR) e inglês.
 
 Funciona no Instagram, X/Twitter, TikTok, Facebook e Reddit. Requer Chrome 121+ ou Firefox 128+.
@@ -45,6 +46,8 @@ Funciona no Instagram, X/Twitter, TikTok, Facebook e Reddit. Requer Chrome 121+ 
 3. Clique em **Carregar sem compactação** e escolha a pasta `speedia` extraída.
 4. Recarregue as abas do Instagram, X, TikTok, Facebook e Reddit que já estiverem abertas.
 
+Essa instalação não se atualiza sozinha. Uma vez por dia o Speedia consulta o GitHub; quando sai uma release nova, o ícone mostra o selo **NEW** e o popup leva ao download. Para atualizar, extraia o zip novo por cima da mesma pasta e clique no botão de recarregar do card da extensão em `chrome://extensions`.
+
 ### Firefox
 
 Abra o `.xpi` assinado da [última release](https://github.com/Glerme/Speedia/releases/latest) no Firefox e confirme a instalação. Ele se atualiza sozinho a cada nova release.
@@ -52,7 +55,7 @@ Abra o `.xpi` assinado da [última release](https://github.com/Glerme/Speedia/re
 ### Edições
 
 - **Completa** (releases do GitHub): inclui o download de vídeos.
-- **Lojas** (Chrome Web Store / AMO): a mesma extensão sem download de vídeos e sem a permissão `downloads`.
+- **Lojas** (Chrome Web Store / AMO): a mesma extensão sem download de vídeos e sem o aviso de nova versão, e sem as permissões `downloads` e `alarms`.
 
 Gere qualquer uma com `scripts/build.sh <full|store> <outdir>` (ex.: `scripts/build.sh store dist` → `dist/speedia-store` e `dist/speedia-store-firefox`).
 
@@ -120,7 +123,7 @@ Uma página pequena abre após a instalação, com os recursos e os atalhos.
 
 ## Privacidade
 
-O Speedia não coleta dados e não tem servidores. Tudo roda no seu navegador, apenas nos 5 sites suportados (Instagram, X, TikTok, Facebook e Reddit). O download vem direto do CDN do site, sem passar por servidor do Speedia. Ele pede três permissões: `activeTab` (lê o endereço da aba atual só para o botão "Liberar este site"), `downloads` (para salvar vídeos) e `storage` (para guardar suas configurações). No Firefox, o manifest declara `data_collection_permissions: none`.
+O Speedia não coleta dados e não tem servidores. Tudo roda no seu navegador, apenas nos 5 sites suportados (Instagram, X, TikTok, Facebook e Reddit). O download vem direto do CDN do site, sem passar por servidor do Speedia. No Chrome, a edição do GitHub consulta a API pública do GitHub uma vez por dia só para saber o número da última versão, sem enviar dados seus (a edição da loja e o Firefox não fazem isso, porque se atualizam sozinhos). Ele pede quatro permissões: `activeTab` (lê o endereço da aba atual só para o botão "Liberar este site"), `alarms` (agenda a checagem diária de versão), `downloads` (para salvar vídeos) e `storage` (para guardar suas configurações). No Firefox, o manifest declara `data_collection_permissions: none`.
 
 ## Desenvolvimento
 
