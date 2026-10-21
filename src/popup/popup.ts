@@ -4,7 +4,7 @@ import { SPEEDIA_ACTIONS, speediaCombo, speediaDefaultShortcuts, speediaPretty }
 
 type Shortcuts = Record<string, string>;
 // Objeto guardado em chrome.storage.sync.
-interface Settings { autoPip: boolean; shortcuts: Shortcuts; theme: string; accent: string }
+interface Settings { autoPip: boolean; tabPip: boolean; shortcuts: Shortcuts; theme: string; accent: string }
 
 (() => {
   'use strict';
@@ -27,6 +27,7 @@ interface Settings { autoPip: boolean; shortcuts: Shortcuts; theme: string; acce
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const list = byId('shortcuts');
   const autoPip = byId<HTMLInputElement>('autoPip');
+  const tabPip = byId<HTMLInputElement>('tabPip');
   const bar = byId('bar');
   const $reset = byId<HTMLButtonElement>('reset');
   const statusText = byId('statusText');
@@ -186,6 +187,7 @@ interface Settings { autoPip: boolean; shortcuts: Shortcuts; theme: string; acce
   };
 
   autoPip.onchange = () => chrome.storage.sync.set({ autoPip: autoPip.checked }).catch(() => {});
+  tabPip.onchange = () => chrome.storage.sync.set({ tabPip: tabPip.checked }).catch(() => {});
   $reset.onclick = () => {
     recording = null;
     undoSnapshot = snapshot();
@@ -195,9 +197,10 @@ interface Settings { autoPip: boolean; shortcuts: Shortcuts; theme: string; acce
     render();
   };
 
-  const defaults: Pick<Settings, 'autoPip' | 'shortcuts'> = { autoPip: true, shortcuts: {} };
+  const defaults: Pick<Settings, 'autoPip' | 'tabPip' | 'shortcuts'> = { autoPip: true, tabPip: false, shortcuts: {} };
   (chrome.storage.sync.get(defaults) as Promise<typeof defaults>).then((s) => {
     autoPip.checked = s.autoPip;
+    tabPip.checked = s.tabPip;
     shortcuts = { ...speediaDefaultShortcuts(), ...s.shortcuts };
     render();
   }).catch(() => render());

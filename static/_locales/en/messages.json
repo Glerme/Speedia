@@ -75,6 +75,14 @@
     "message": "Automatic mini player when you scroll past a video that is playing sound",
     "description": "Descrição do interruptor de PiP automático (popup)."
   },
+  "popupTabPipLabel": {
+    "message": "PiP on tab switch",
+    "description": "Rótulo do interruptor de PiP ao trocar de aba (popup)."
+  },
+  "popupTabPipHint": {
+    "message": "Opens the video in picture-in-picture when you switch tabs. Chrome only; the browser may ask for permission.",
+    "description": "Descrição do interruptor de PiP ao trocar de aba (popup)."
+  },
   "popupUndo": {
     "message": "Undo",
     "description": "Botão que desfaz a última mudança de atalhos."
