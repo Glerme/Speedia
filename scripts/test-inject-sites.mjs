@@ -26,7 +26,10 @@ function setup(edition = 'full') {
     class CustomEvent {
         constructor(type, init) { this.type = type; this.detail = init?.detail; }
     }
-    class XMLHttpRequestStub { addEventListener() {} }
+    class XMLHttpRequestStub {
+        constructor() { this.listeners = {}; this.responseType = ''; }
+        addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
+    }
     const originalOpen = XMLHttpRequestStub.prototype.open = function () {};
     class HTMLMediaElementStub {
         constructor() { this.dataset = {}; }
@@ -54,8 +57,18 @@ function setup(edition = 'full') {
         await tick();
     };
 
+    const sendXhr = async (url, body, responseType = '') => {
+        const request = new XMLHttpRequestStub();
+        request.open('GET', url);
+        request.responseType = responseType;
+        if (responseType === 'json') request.response = body;
+        else request.responseText = body;
+        for (const fn of request.listeners.load || []) fn.call(request);
+        await tick();
+    };
+
     return {
-        edition, window, records, scripts, send,
+        edition, window, records, scripts, send, sendXhr,
         originalFetch, originalOpen,
         XHR: XMLHttpRequestStub,
         HTMLMediaElement: HTMLMediaElementStub,
@@ -132,6 +145,69 @@ function take(site, records) {
         id: 'fb:222', keys: ['222'], duration: 3, url: 'https://video.fbcdn.net/b.mp4',
     }], 'Facebook multilinha deve gerar um registro por JSON');
     console.log('Facebook for (;;); e multilinha: ok');
+}
+
+// ---------------------------------------------------------------- Regressões 9d56eed
+{
+    const site = setup();
+    await site.send('https://www.tiktok.com/api/item/detail/', JSON.stringify({
+        itemList: [{ id: '8000000000000000001', video: { duration: 5, playAddr: 'http://v16.tiktokcdn.com/insecure.mp4' } }],
+    }));
+    await site.send('https://www.facebook.com/api/graphql/', JSON.stringify({
+        id: '900', playable_duration_in_ms: 5000, browser_native_hd_url: 'http://video.xx.fbcdn.net/insecure.mp4',
+    }));
+    assert.deepEqual(site.records, [], 'URL http em TikTok e Facebook deve ser recusada');
+    console.log('TikTok e Facebook recusam URL http: ok');
+}
+
+{
+    const site = setup();
+    await site.send('https://www.facebook.com/api/graphql/', JSON.stringify({
+        id: '333',
+        playable_duration_in_ms: 9000,
+        videoDeliveryLegacyFields: {
+            browser_native_hd_url: 'https://video.xx.fbcdn.net/legacy-hd.mp4',
+            browser_native_sd_url: 'https://video.xx.fbcdn.net/legacy-sd.mp4',
+        },
+    }));
+    await site.send('https://www.facebook.com/api/graphql/', JSON.stringify({
+        id: '444',
+        length_in_second: 6,
+        videoDeliveryLegacyFields: { browser_native_sd_url: 'https://video.xx.fbcdn.net/legacy-sd.mp4' },
+    }));
+    assert.deepEqual(take('fb', site.records), [{
+        id: 'fb:333', keys: ['333'], duration: 9, url: 'https://video.xx.fbcdn.net/legacy-hd.mp4',
+    }, {
+        id: 'fb:444', keys: ['444'], duration: 6, url: 'https://video.xx.fbcdn.net/legacy-sd.mp4',
+    }], 'Facebook deve ler URLs de videoDeliveryLegacyFields usando id/duração do pai');
+    console.log('Facebook videoDeliveryLegacyFields: ok');
+}
+
+{
+    const site = setup();
+    await site.send('https://www.facebook.com/api/graphql/', JSON.stringify({
+        id: '555',
+        length_in_second: 4,
+        browser_native_sd_url: 'https://video.fbcdn.net/parent.mp4',
+        videoDeliveryLegacyFields: { browser_native_hd_url: 'https://video.fbcdn.net/child-hd.mp4' },
+    }));
+    assert.deepEqual(take('fb', site.records), [{
+        id: 'fb:555', keys: ['555'], duration: 4, url: 'https://video.fbcdn.net/child-hd.mp4',
+    }], 'URL no pai e no filho não deve duplicar o registro');
+    console.log('Facebook pai e filho sem duplicata: ok');
+}
+
+// ---------------------------------------------------------------- XHR
+{
+    const site = setup();
+    const id = '7334567890123456789';
+    await site.sendXhr('https://www.tiktok.com/api/item/detail/?itemId=' + id, {
+        itemList: [{ id, video: { duration: 8, playAddr: 'https://v16.tiktokcdn.com/xhr.mp4' } }],
+    }, 'json');
+    assert.deepEqual(take('tt', site.records), [{
+        id: 'tt:' + id, keys: [id], duration: 8, url: 'https://v16.tiktokcdn.com/xhr.mp4',
+    }], 'XHR com responseType json deve gerar registro');
+    console.log('TikTok via XMLHttpRequest: ok');
 }
 
 // ---------------------------------------------------------------- Instagram e X
